@@ -1,0 +1,32 @@
+schema_version = "1.0.0"
+
+id = "flowfx"
+version = "0.1.0-alpha"
+name = "FlowFX"
+tagline = "Physically based water and flow simulation"
+maintainer = "Arsh (arsh342)"
+type = "add-on"
+
+website = "https://arsh.engineer"
+
+tags = ["Physics", "Animation"]
+
+blender_version_min = "5.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+copyright = [
+  "2026 Arsh",
+]
+
+[permissions]
+files = "Read and write simulation caches and preset files"
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "*.pyc",
+  "*.DS_Store",
+  "/wheels/*.whl",
+]

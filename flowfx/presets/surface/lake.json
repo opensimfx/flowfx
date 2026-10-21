@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "lake",
+  "name": "Lake",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Fetch-limited lake sea, 6 m/s wind over 3 km.",
+  "physical": {
+    "wind_speed_mps": 6.0,
+    "depth_m": 8.0,
+    "extent_m": 100,
+    "fetch_m": 3000
+  },
+  "targets": {
+    "hs_m": 0.17
+  },
+  "mapping": {
+    "spectrum": "TEXEL_MARSEN_ARSLOE",
+    "choppiness": 0.6,
+    "wave_alignment": 0.5,
+    "damping": 0.6,
+    "foam_coverage": -0.2,
+    "resolution": 16,
+    "viewport_resolution": 8,
+    "use_foam": true,
+    "use_spray": false,
+    "layers": 1
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "lake"
+  },
+  "tags": [
+    "lake",
+    "shallow"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "river_rapids",
+  "name": "River Rapids",
+  "category": "flow",
+  "engine": "fluid",
+  "description": "Steep rocky reach, supercritical flow with hydraulic jumps and whitewater.",
+  "physical": {
+    "depth_m": 0.5,
+    "slope": 0.05,
+    "manning_n": 0.05,
+    "extent_m": [
+      30.0,
+      10.0,
+      6.0
+    ]
+  },
+  "targets": {},
+  "mapping": {
+    "scenario": "channel",
+    "method": "APIC",
+    "voxel_m": 0.1,
+    "flip_ratio": 0.97,
+    "particle_number": 2,
+    "use_fractions": true,
+    "fractions_distance": 0.5,
+    "mesh_scale": 2,
+    "secondary": {
+      "spray": true,
+      "foam": true,
+      "bubbles": true
+    },
+    "cache": {
+      "type": "MODULAR",
+      "data_format": "OPENVDB",
+      "compress": "BLOSC"
+    },
+    "borders": {
+      "x": false,
+      "y": true,
+      "z_bottom": true,
+      "z_top": false
+    }
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "turbulent"
+  },
+  "tags": [
+    "river",
+    "whitewater"
+  ]
+}

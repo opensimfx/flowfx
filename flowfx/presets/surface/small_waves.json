@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "small_waves",
+  "name": "Small Waves",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Light chop on a small water body.",
+  "physical": {
+    "wind_speed_mps": 4.0,
+    "depth_m": 3.0,
+    "extent_m": 50
+  },
+  "targets": {
+    "hs_m": 0.1
+  },
+  "mapping": {
+    "spectrum": "TEXEL_MARSEN_ARSLOE",
+    "choppiness": 0.4,
+    "wave_alignment": 0.6,
+    "damping": 0.7,
+    "foam_coverage": -0.5,
+    "resolution": 14,
+    "viewport_resolution": 8,
+    "use_foam": false,
+    "use_spray": false,
+    "layers": 1
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "lake"
+  },
+  "tags": [
+    "calm",
+    "shallow"
+  ]
+}

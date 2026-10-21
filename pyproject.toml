@@ -1,0 +1,20 @@
+[project]
+name = "flowfx"
+version = "0.1.0"
+description = "Physically based water and flow simulation for Blender 5.2+"
+requires-python = ">=3.13"
+license = { text = "GPL-3.0-or-later" }
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit", "tests/api_contract", "tests/integration"]
+markers = ["slow: long-running validation tests (render, long time series)"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+extend-exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501", "B008", "B905"]

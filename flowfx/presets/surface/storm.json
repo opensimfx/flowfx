@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "id": "storm",
+  "name": "Storm Sea",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Storm sea with spray map.",
+  "physical": {
+    "wind_speed_mps": 25.0,
+    "depth_m": 200.0,
+    "extent_m": 400
+  },
+  "targets": {
+    "hs_m": 8.0
+  },
+  "mapping": {
+    "spectrum": "JONSWAP",
+    "choppiness": 1.5,
+    "wave_alignment": 0.6,
+    "damping": 0.3,
+    "foam_coverage": 0.8,
+    "resolution": 22,
+    "viewport_resolution": 11,
+    "use_foam": true,
+    "use_spray": true,
+    "layers": 1,
+    "sharpen_peak_jonswap": 0.7
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "ocean_dark"
+  },
+  "tags": [
+    "ocean",
+    "storm"
+  ]
+}

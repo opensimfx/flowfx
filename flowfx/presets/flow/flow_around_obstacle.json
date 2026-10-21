@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "id": "flow_around_obstacle",
+  "name": "Flow Around Obstacle",
+  "category": "flow",
+  "engine": "fluid",
+  "description": "Current past a circular pier; wake and vortex shedding.",
+  "physical": {
+    "depth_m": 2.0,
+    "velocity_mps": 2.0,
+    "cylinder_d_m": 1.0,
+    "extent_m": [
+      20.0,
+      10.0,
+      4.0
+    ]
+  },
+  "targets": {},
+  "mapping": {
+    "scenario": "cylinder",
+    "method": "APIC",
+    "voxel_m": 0.1,
+    "flip_ratio": 0.97,
+    "particle_number": 2,
+    "use_fractions": true,
+    "fractions_distance": 0.5,
+    "mesh_scale": 2,
+    "secondary": {
+      "spray": true,
+      "foam": true,
+      "bubbles": true
+    },
+    "cache": {
+      "type": "MODULAR",
+      "data_format": "OPENVDB",
+      "compress": "BLOSC"
+    },
+    "borders": {
+      "x": false,
+      "y": true,
+      "z_bottom": true,
+      "z_top": false
+    }
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "murky"
+  },
+  "tags": [
+    "obstacle",
+    "wake"
+  ]
+}

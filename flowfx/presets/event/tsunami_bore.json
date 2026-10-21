@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "tsunami_bore",
+  "name": "Tsunami Bore",
+  "category": "event",
+  "engine": "heightfield",
+  "description": "Leading wave only: shallow-water far field with a bore running up a 1:20 beach.",
+  "physical": {
+    "offshore_depth_m": 10.0,
+    "bore_height_m": 5.0,
+    "beach_slope": 0.05,
+    "extent_m": [
+      2000.0,
+      500.0
+    ]
+  },
+  "targets": {},
+  "mapping": {
+    "scenario": "tsunami_pulse",
+    "cell_m": 10.0,
+    "duration_s": 120.0,
+    "cfl": 0.45
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "ocean_dark"
+  },
+  "tags": [
+    "event",
+    "tsunami"
+  ]
+}

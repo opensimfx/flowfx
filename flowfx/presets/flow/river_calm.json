@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "river_calm",
+  "name": "River (Calm)",
+  "category": "flow",
+  "engine": "heightfield",
+  "description": "Lowland river reach: shallow-water solver, Manning friction, subcritical flow.",
+  "physical": {
+    "depth_m": 2.0,
+    "slope": 0.0003,
+    "manning_n": 0.035,
+    "extent_m": [
+      200.0,
+      40.0
+    ]
+  },
+  "targets": {},
+  "mapping": {
+    "scenario": "river_reach",
+    "cell_m": 1.0,
+    "duration_s": 60.0,
+    "cfl": 0.45
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "murky"
+  },
+  "tags": [
+    "river",
+    "heightfield"
+  ]
+}

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Blender and add-on artefacts
+*.blend1
+.DS_Store
+
+# Extracted copy of the packaged extension, a build artefact
+dist/
+
+# Runtime output
+flowfx_cache/
+scenes/previews/
+
+#github non commiting for now 
+CONTRIBUTING.md
+docs/

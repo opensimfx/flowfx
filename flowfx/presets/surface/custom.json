@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "id": "custom",
+  "name": "Custom Ocean",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Blank spectral surface for manual tuning.",
+  "physical": {
+    "wind_speed_mps": 10.0,
+    "depth_m": 200.0,
+    "extent_m": 100
+  },
+  "targets": {
+    "hs_m": 1.0
+  },
+  "mapping": {
+    "spectrum": "JONSWAP",
+    "choppiness": 1.0,
+    "wave_alignment": 0.5,
+    "damping": 0.5,
+    "foam_coverage": 0.0,
+    "resolution": 16,
+    "viewport_resolution": 8,
+    "use_foam": true,
+    "use_spray": false,
+    "layers": 1
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "ocean"
+  },
+  "tags": [
+    "custom"
+  ]
+}

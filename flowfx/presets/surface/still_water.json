@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "still_water",
+  "name": "Still Water",
+  "category": "surface",
+  "engine": "interaction",
+  "description": "Flat water plane with micro-ripple shading. Dynamic Paint Waves reacts to objects entering the water.",
+  "physical": {
+    "extent_m": 50.0,
+    "depth_m": 2.0
+  },
+  "targets": {},
+  "mapping": {
+    "canvas": true,
+    "wave_speed": 1.0,
+    "wave_damping": 0.05,
+    "wave_timescale": 1.0,
+    "wave_spring": 0.2,
+    "wave_smoothness": 1.0,
+    "grid_cells": 128
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "clear"
+  },
+  "tags": [
+    "calm",
+    "interaction"
+  ]
+}

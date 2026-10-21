@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "id": "boat_wake",
+  "name": "Boat Wake",
+  "category": "event",
+  "engine": "interaction",
+  "description": "Moving hull over a Dynamic Paint Waves canvas; Kelvin wake angle check.",
+  "physical": {
+    "hull_speed_mps": 6.0,
+    "extent_m": 100.0,
+    "depth_m": 10.0
+  },
+  "targets": {},
+  "mapping": {
+    "canvas": true,
+    "wave_speed": 1.0,
+    "wave_damping": 0.02,
+    "wave_timescale": 1.0,
+    "wave_spring": 0.1,
+    "wave_smoothness": 1.0,
+    "grid_cells": 256
+  },
+  "calibrate": {},
+  "shading": {
+    "material": "lake"
+  },
+  "tags": [
+    "event",
+    "wake",
+    "interaction"
+  ]
+}

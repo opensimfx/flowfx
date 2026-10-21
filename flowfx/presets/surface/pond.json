@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "pond",
+  "name": "Pond Ripples",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Sheltered pond; faint wind ripples.",
+  "physical": {
+    "wind_speed_mps": 1.5,
+    "depth_m": 1.5,
+    "extent_m": 20
+  },
+  "targets": {
+    "hs_m": 0.02
+  },
+  "mapping": {
+    "spectrum": "TEXEL_MARSEN_ARSLOE",
+    "choppiness": 0.1,
+    "wave_alignment": 0.3,
+    "damping": 0.8,
+    "foam_coverage": -1.0,
+    "resolution": 12,
+    "viewport_resolution": 8,
+    "use_foam": false,
+    "use_spray": false,
+    "layers": 1
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "clear"
+  },
+  "tags": [
+    "calm",
+    "shallow"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "ocean_swell",
+  "name": "Ocean Swell",
+  "category": "surface",
+  "engine": "spectral",
+  "description": "Long established swell, developing sea.",
+  "physical": {
+    "wind_speed_mps": 8.0,
+    "depth_m": 200.0,
+    "extent_m": 200
+  },
+  "targets": {
+    "hs_m": 0.8
+  },
+  "mapping": {
+    "spectrum": "JONSWAP",
+    "choppiness": 0.8,
+    "wave_alignment": 0.9,
+    "damping": 0.7,
+    "foam_coverage": 0.0,
+    "resolution": 18,
+    "viewport_resolution": 9,
+    "use_foam": true,
+    "use_spray": false,
+    "layers": 1
+  },
+  "calibrate": {
+    "method": "hs",
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "tolerance": 0.1
+  },
+  "shading": {
+    "material": "ocean"
+  },
+  "tags": [
+    "ocean",
+    "swell"
+  ]
+}
