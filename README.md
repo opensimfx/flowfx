@@ -3,9 +3,9 @@
 **Physically based water and flow for Blender** — part of [OpenSimFX](https://github.com/opensimfx),
 alongside BlastFX, RainFX and AtmosFX.
 
-![Choppy waves](docs/previews/choppy_waves.png)
-![Dam break](docs/previews/dam_break.png)
-![River calm](docs/previews/river_calm.png)
+![Choppy waves](flowfx/assets/previews/choppy_waves.png)
+![Dam break](flowfx/assets/previews/dam_break.png)
+![River calm](flowfx/assets/previews/river_calm.png)
 
 _Renders: headless Cycles, preview quality (`tools/render_preview.py`). They are validation checks, not showpieces._
 
