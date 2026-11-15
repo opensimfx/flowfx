@@ -1,12 +1,12 @@
 """Measure a real Mantaflow bake: dam-break front speed, depth profile and volume.
 
-Mantaflow only runs in the real Blender binary, not in the PyPI `bpy` module (docs/spikes.md S8), so this
+Mantaflow only runs in the real Blender binary, not in the PyPI `bpy` module (docs/VALIDATION.md, spike S8), so this
 script runs inside desktop Blender:
 
   /Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup \
       --python tools/fluid_validation.py -- [preset_id] [frames]
 
-Writes docs/fluid_validation_<preset>.json and docs/fluid_validation.md. The measurement is taken from the baked
+Writes docs/fluid_validation_<preset>.json and the Mantaflow section of docs/VALIDATION.md. The measurement is taken from the baked
 liquid mesh: every (x, y) column of the mesh gives a water depth (top minus bottom vertex), which is the hydraulic
 depth. The mesh is a lower bound on the volume: a sheet thinner than a mesh cell is not resolved, and whitewater
 leaves the liquid mesh for the spray and foam particle systems.
@@ -233,14 +233,16 @@ def write_md(out: Path) -> None:
              "these numbers come from the desktop build only.", ""]
     for f in sorted(out.parent.glob("fluid_validation_*.json")):
         parts += [md(json.loads(f.read_text(encoding="utf-8"))), ""]
-    (out.parent / "fluid_validation.md").write_text("\n".join(parts), encoding="utf-8")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _docsection import write_section
+    write_section(out.parent / "VALIDATION.md", "fluid-validation", "\n".join(parts))
 
 
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     if argv and argv[0] == "--md":
         write_md(OUT)
-        print(f"wrote {OUT.with_name('fluid_validation.md')}")
+        print(f"wrote the fluid-validation section of {OUT.with_name('VALIDATION.md')}")
         sys.stdout.flush()
         import os
 

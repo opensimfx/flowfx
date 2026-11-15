@@ -1,4 +1,4 @@
-"""Mantaflow bake orchestration. Needs a UI session; the headless bpy module aborts (docs/spikes.md S8)."""
+"""Mantaflow bake orchestration. Needs a UI session; the headless bpy module aborts (docs/VALIDATION.md, spike S8)."""
 from __future__ import annotations
 
 from ...bindings import fluid as F

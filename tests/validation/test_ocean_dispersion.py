@@ -2,7 +2,7 @@
 
 Method: evaluate the surface over time, FFT each frame, and take the temporal spectrum of the strongest
 Fourier modes. Blender's Ocean produces standing-wave modes, so phase tracking does not work.
-Results are recorded in docs/validation_report.md; only the well-resolved cases are asserted.
+Results are recorded in docs/VALIDATION.md; only the well-resolved cases are asserted.
 """
 import numpy as np
 import pytest

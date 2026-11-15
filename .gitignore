@@ -1,21 +1,31 @@
 # Python
 __pycache__/
 *.py[cod]
-.venv/
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
+.venv/
+venv*/
 
-# Blender and add-on artefacts
-*.blend1
+# OS and editors
 .DS_Store
+._*
+.idea/
+.vscode/
 
-# Extracted copy of the packaged extension, a build artefact
+# Blender backups
+*.blend1
+*.blend2
+
+# Build output (release zips go on GitHub Releases)
 dist/
 
-# Runtime output
+# FlowFX runtime output
 flowfx_cache/
-scenes/previews/
+examples/previews/
 
-#github non commiting for now 
-CONTRIBUTING.md
-docs/
+# Generated reports with machine-specific paths (docs/*.md are committed)
+docs/*.json
+
+# Local notes that are never published (research material, competitor analysis, dev leftovers)
+private/

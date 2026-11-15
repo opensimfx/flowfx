@@ -1,5 +1,5 @@
 """Fluid domain tests. Run with `pytest --forked` (tools/run_tests.py does): once a Mantaflow domain exists in a
-headless PyPI `bpy` session, later scene resets abort the interpreter (docs/spikes.md S8). One process per
+headless PyPI `bpy` session, later scene resets abort the interpreter (docs/VALIDATION.md, spike S8). One process per
 test avoids that. The tests never evaluate the depsgraph and never bake."""
 import tempfile
 import uuid
@@ -109,7 +109,7 @@ def test_guide_requires_parent_domain(scene):
 
 
 def test_headless_fluid_bake_is_not_attempted_in_tests(scene):
-    # Mantaflow aborts the process under the PyPI bpy module (docs/spikes.md S8); only check the entry points.
+    # Mantaflow aborts the process under the PyPI bpy module (docs/VALIDATION.md, spike S8); only check the entry points.
     from flowfx.bindings import fluid
 
     for name in fluid.BAKE_OPERATORS:

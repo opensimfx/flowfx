@@ -1,7 +1,7 @@
 """Closed-form water physics used by the preset mapping layer.
 
 Pure Python, no bpy. Every function is unit tested in tests/unit/test_theory.py.
-Evidence tags in docs/theory.md: [T] = textbook value, not retrieved during research.
+Evidence tags in docs/PHYSICS.md: [T] = textbook value, not retrieved during research.
 """
 from __future__ import annotations
 

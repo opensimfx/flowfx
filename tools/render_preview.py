@@ -80,8 +80,8 @@ def ground(z, size):
     return obj
 
 
-def camera_to(obj, elevation=0.30, distance_factor=1.2):
-    """Frame the camera on the evaluated bbox of `obj` from a three-quarter view."""
+def camera_three_quarter(obj, elevation=0.30, distance_factor=1.2):
+    """Three-quarter view from outside, for compact bodies (a baked Mantaflow liquid)."""
     dg = bpy.context.evaluated_depsgraph_get()
     ev = obj.evaluated_get(dg)
     mesh = ev.to_mesh()
@@ -100,7 +100,46 @@ def camera_to(obj, elevation=0.30, distance_factor=1.2):
     direction = center - cam.location
     cam.rotation_euler = Vector(direction).to_track_quat("-Z", "Y").to_euler()
     bpy.context.scene.camera = cam
-    return cam, size
+    return cam
+
+
+def camera_along_surface(obj, pitch_deg=20.0):
+    """Stand at the near end of the water body and look along it, pitched down.
+
+    The old three-quarter view framed the whole bounding box from outside: an ocean
+    tile read as a small sheet on the floor and a long river as a thin strip far
+    away. From the near end of the long axis, a little above the surface and
+    looking ~20 degrees down, water fills the frame and the tile's far edge stays
+    above the top of the image.
+    """
+    import math
+
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = obj.evaluated_get(dg)
+    mesh = ev.to_mesh()
+    co = np.empty(len(mesh.vertices) * 3)
+    mesh.vertices.foreach_get("co", co)
+    ev.to_mesh_clear()
+    mw = np.array(obj.matrix_world)
+    co = co.reshape(-1, 3) @ mw[:3, :3].T + mw[:3, 3]
+    lo, hi = co.min(axis=0), co.max(axis=0)
+    center = (lo + hi) / 2
+    ext = hi - lo
+    along = Vector((1.0, 0.0, 0.0)) if ext[0] >= ext[1] else Vector((0.0, 1.0, 0.0))
+    side = Vector((-along.y, along.x, 0.0))
+    length, width = max(ext[0], ext[1]), min(ext[0], ext[1])
+    height = max(2.0, 0.06 * min(length, 8.0 * width))
+    data = bpy.data.cameras.new("FlowFX Camera")
+    data.lens = 35
+    data.clip_end = max(1000.0, 4.0 * length)
+    cam = bpy.data.objects.new("FlowFX Camera", data)
+    bpy.context.scene.collection.objects.link(cam)
+    cam.location = Vector(center) - along * (0.45 * length) + side * (0.12 * width) + Vector((0.0, 0.0, ext[2] / 2 + height))
+    pitch = math.radians(pitch_deg)
+    direction = along * math.cos(pitch) - Vector((0.0, 0.0, math.sin(pitch)))
+    cam.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+    bpy.context.scene.camera = cam
+    return cam
 
 
 def hide_helpers(uid, keep=("SURFACE",)):
@@ -114,7 +153,7 @@ def hide_helpers(uid, keep=("SURFACE",)):
 
 def main(argv):
     preset_id = argv[0] if argv else "choppy_waves"
-    out = Path(argv[1]) if len(argv) > 1 else ROOT / "docs" / "previews" / f"{preset_id}.png"
+    out = Path(argv[1]) if len(argv) > 1 else ROOT / "docs" / "img" / f"{preset_id}.png"
     samples = int(argv[2]) if len(argv) > 2 else 48
 
     flowfx = load_package()
@@ -168,7 +207,12 @@ def main(argv):
     sun_lamp()
     depth = preset["physical"].get("depth_m", 8.0)
     ground(-depth, 4000.0)
-    camera_to(surface)
+    # Open water (ocean, lake, river) is filmed from within, looking along it; a
+    # compact baked liquid (dam break) reads best from outside.
+    if item.engine == "fluid":
+        camera_three_quarter(surface)
+    else:
+        camera_along_surface(surface)
 
     out.parent.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

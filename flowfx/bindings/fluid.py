@@ -116,7 +116,7 @@ def bake(domain_obj, stage: str = "all", scene=None):
     """Run a Mantaflow bake/free operator for the domain object. Returns the operator result set.
 
     A UI session invokes the job so the progress bar shows; a background script runs it synchronously.
-    The headless `bpy` module still aborts inside Mantaflow (see docs/spikes.md S8).
+    The headless `bpy` module still aborts inside Mantaflow (see docs/VALIDATION.md, spike S8).
     """
     import bpy
 

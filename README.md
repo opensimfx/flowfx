@@ -1,13 +1,16 @@
-# FlowFX
+<h1><img src=".github/logo.png" alt="FlowFX logo" width="64" height="64" align="absmiddle">&nbsp;FlowFX</h1>
 
 **Physically based water and flow for Blender** — part of [OpenSimFX](https://github.com/opensimfx),
 alongside BlastFX, RainFX and AtmosFX.
 
-![Choppy waves](flowfx/assets/previews/choppy_waves.png)
-![Dam break](flowfx/assets/previews/dam_break.png)
-![River calm](flowfx/assets/previews/river_calm.png)
+![Choppy waves](docs/img/choppy_waves.png)
 
-_Renders: headless Cycles, preview quality (`tools/render_preview.py`). They are validation checks, not showpieces._
+| | |
+|---|---|
+| ![Dam break](docs/img/dam_break.png) | ![River calm](docs/img/river_calm.png) |
+
+_Renders: desktop Blender 5.2.3, Cycles, one per engine (`tools/render_preview.py`, see
+[docs/DEVELOPMENT.md (Preview renders)](docs/DEVELOPMENT.md#preview-renders)). They are validation checks, not showpieces._
 
 FlowFX builds water for Blender from physical parameters instead of hand-keyframed noise. 21 SI-unit presets cover still water and ponds, ocean from calm to storm, rivers and rapids, streams, waterfalls, dam breaks, floods, tsunami bores, breaking surf and boat wakes.
 
@@ -30,9 +33,9 @@ Requires Blender **5.2 LTS or newer**.
 python tools/build_extension.py        # -> dist/flowfx-<version>.zip
 ```
 
-In Blender: *Preferences > Get Extensions > Install from Disk…*, pick the zip. The panel appears in the 3D Viewport sidebar (**N**) under **FlowFX**.
+In Blender: *Edit > Preferences > Get Extensions > (v) > Install from Disk...*, pick the zip. The panel appears in the 3D Viewport sidebar (**N**) under **FlowFX**.
 
-The repository ships a demo scene (`scenes/flowfx_demo.blend`) built from the dam-break preset, and every preset can be dropped into any scene from the FlowFX tab.
+The repository ships a demo scene (`examples/flowfx_demo.blend`) built from the dam-break preset, and every preset can be dropped into any scene from the FlowFX tab.
 
 ## Quick start
 
@@ -42,7 +45,7 @@ The repository ships a demo scene (`scenes/flowfx_demo.blend`) built from the da
 4. Heightfield presets: **Bake** solves the shallow-water equations and writes EXR sequences that drive a Displace modifier.
 5. **Roles and Coupling** adds obstacles, sources, sinks, a piston wavemaker and floating objects.
 
-Full guide: `docs/user_guide.md`.
+Full walkthrough: [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 
 ## Verification status (read this)
 
@@ -50,12 +53,12 @@ Verified on **Blender 5.2.1 LTS (`bpy` wheel 5.2.2, Python 3.13)**:
 
 - 93 tests pass in the `bpy` 5.2.2 module: 76 unit, API contract and integration, 13 forked fluid, 4 slow validation.
 - Extension packaging: built and validated via `blender_ext.py validate` and `build`; `dist/flowfx-0.1.0-alpha.zip`.
-- Spectral engine (Ocean modifier): 10 surface presets build, calibrate and bake EXR in tests; held-out Hs errors in `docs/validation_report.md`.
+- Spectral engine (Ocean modifier): 10 surface presets build, calibrate and bake EXR in tests; held-out Hs errors in `docs/VALIDATION.md`.
 - Heightfield engine (shallow water): Lake-at-rest, mass, wave speed, Ritter dam break, Manning all measured; displaced mesh equals baked pixels.
-- Fluid engine (Mantaflow): **Bakes run and match theory** — dam-break front 5.96 m/s against Ritter 6.26 m/s (4.9%), river inflow delivers the designed 0.5 m cross-section (`docs/fluid_validation.md`).
+- Fluid engine (Mantaflow): **Bakes run and match theory** — dam-break front 5.96 m/s against Ritter 6.26 m/s (4.9%), river inflow delivers the designed 0.5 m cross-section (`docs/VALIDATION.md (Mantaflow validation)`).
 - Floater solver: Heave period 0.01% and draft 0.00% from theory; bakes keyframes.
 - Dynamic Paint interaction: Builds canvas and brushes; settings read back.
-- Shading, volume, compositing: Cycles absorption verified exactly against Beer-Lambert; real renders in `docs/previews.md`.
+- Shading, volume, compositing: Cycles absorption verified exactly against Beer-Lambert; real renders in `docs/DEVELOPMENT.md (Preview renders)`.
 
 **Not verified** — treat as unknown:
 
@@ -68,7 +71,7 @@ Verified on **Blender 5.2.1 LTS (`bpy` wheel 5.2.2, Python 3.13)**:
 ## Repository layout
 
 ```
-flowfx/                 the add-on (what gets zipped)
+flowfx/                 the add-on (this folder is what the extension zip contains)
   core/                 pure Python: theory, scale, presets, schema, calibration, jobs, orchestrator
   bindings/             every Blender identifier string (one place to fix API drift)
   engines/              spectral, fluid, heightfield, gn_flip (probe), external (FLIP Fluids detection)
@@ -80,9 +83,8 @@ flowfx/                 the add-on (what gets zipped)
   assets/               preview swatches and flowfx_assets.blend (materials)
 tests/                  unit, api_contract, integration, integration_fluid (forked), validation
 tools/                  build, validate, desktop checks, fluid validation, renders, docs
-docs/                   user guide, design, theory, API, spikes, roadmap, ADRs, generated reports
-dist/                   prebuilt flowfx-0.1.0-alpha.zip and checksum
-scenes/                 demo scene and the asset library
+docs/                   user guide, presets, physics, system design, development, validation, references, roadmap, UI style
+examples/               demo scene
 ```
 
 ## Develop
@@ -94,14 +96,16 @@ uv pip install --python .venv/bin/python bpy numpy pytest pytest-forked ruff
 .venv/bin/python tools/build_extension.py    # writes dist/flowfx-<version>.zip
 ```
 
-See `docs/development.md` and `CONTRIBUTING.md`.
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 
-[User Guide](docs/user_guide.md) · [Design](docs/design.md) · [Theory](docs/theory.md) · [API](docs/api.md) · [Fluid Validation](docs/fluid_validation.md) · [Previews](docs/previews.md) · [Roadmap](docs/roadmap.md) · [CHANGELOG](CHANGELOG.md)
+[User guide](docs/USER_GUIDE.md) · [Presets](docs/PRESETS.md) · [Physics](docs/PHYSICS.md) ·
+[System design](docs/SYSTEM_DESIGN.md) · [Development](docs/DEVELOPMENT.md) · [Validation](docs/VALIDATION.md) ·
+[References](docs/REFERENCES.md) · [Roadmap](docs/ROADMAP.md) · [UI style](docs/UI_STYLE.md) · [Changelog](CHANGELOG.md)
 
 ## License
 
-GPL-3.0-or-later (required for Blender add-ons) — see `LICENSE` in the repository.
+GPL-3.0-or-later — see [LICENSE](LICENSE).
 
-Reference files from the research phase carry their own licences and are **not** included; see `docs/assets_provenance.md`.
+FlowFX is original work and bundles no third-party assets; see [docs/REFERENCES.md](docs/REFERENCES.md).

@@ -3,7 +3,7 @@
   python tools/run_tests.py            unit + api_contract + integration + fluid (forked)
   python tools/run_tests.py --all      also the slow validation tests
 Fluid tests run with pytest-forked: once a Mantaflow domain exists in a headless `bpy` session, the next scene
-reset aborts the interpreter (docs/spikes.md S8).
+reset aborts the interpreter (docs/VALIDATION.md, spike S8).
 """
 import subprocess
 import sys

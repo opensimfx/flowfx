@@ -1,7 +1,7 @@
 """FlowFX bake of the Ocean surface to float EXR sequences (works headless; also stores velocity-ready data).
 
 The built-in `bpy.ops.object.ocean_bake` runs as a background job and writes nothing when called
-headless (docs/spikes.md S8), so FlowFX evaluates the surface itself.
+headless (docs/VALIDATION.md, spike S8), so FlowFX evaluates the surface itself.
 Pixel layout (RGBA float): R = x displacement, G = y displacement, B = height, A = foam.
 """
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """Geometry Nodes bindings for the Blender 5.2 modifier input API."""
 from __future__ import annotations
 
-# Node types that a Geometry Nodes FLIP backend needs. Verified absent in 5.2.2 (docs/spikes.md S4b).
+# Node types that a Geometry Nodes FLIP backend needs. Verified absent in 5.2.2 (docs/VALIDATION.md, spike S4b).
 REQUIRED_FOR_GN_FLIP = ("GeometryNodeGridAdvect", "GeometryNodeGridDivergence", "GeometryNodeGridGradient",
                         "GeometryNodePointsToGrid", "GeometryNodePoissonSolver")
 

@@ -1,4 +1,4 @@
-"""Run the physical and numerical validation suite and write docs/validation_report.md (+ JSON).
+"""Run the physical and numerical validation suite and write its section of docs/VALIDATION.md (+ JSON).
 
 Run with the bpy module:  python tools/run_validation.py
 Measured numbers, not pass/fail only: the report is the evidence for every claim in docs/.
@@ -201,7 +201,7 @@ def md(r):
         a(f"| {k} | {v:.2f} |")
     budget = h["steps_per_second"].get("1024x1024", 0.0)
     a(f"\nThe design budget was 10 steps/s at 1024 x 1024. It is {'**met**' if budget >= 10 else '**not met**'} by NumPy "
-      f"on this machine; see docs/spikes.md S6.\n")
+      f"on this machine; see docs/VALIDATION.md, spike S6.\n")
     f = r["floater"]
     a("## Floater solver\n")
     a("| Test | Measured | Theory | Error |\n|---|---|---|---|")
@@ -231,7 +231,7 @@ def md(r):
     a(f"- Reading {p['particle_readback_count']:,} particles with `foreach_get`: {p['particle_readback_200k_s']:.3f} s.\n")
     a("## Mantaflow\n")
     a("The Mantaflow bakes cannot run in the `bpy` module, so they are measured separately in desktop Blender by\n"
-      "`tools/fluid_validation.py`; the results are in `docs/fluid_validation.md`.\n")
+      "`tools/fluid_validation.py`; the results are in the Mantaflow section of `docs/VALIDATION.md`.\n")
     return "\n".join(L)
 
 
@@ -247,8 +247,10 @@ def main():
         print(f"{name}: {time.time() - t0:.1f}s", flush=True)
     DOCS.mkdir(exist_ok=True)
     (DOCS / "validation_results.json").write_text(json.dumps(R, indent=2, default=float), encoding="utf-8")
-    (DOCS / "validation_report.md").write_text(md(R), encoding="utf-8")
-    print("wrote docs/validation_report.md")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _docsection import write_section
+    write_section(DOCS / "VALIDATION.md", "validation-report", md(R))
+    print("wrote the validation-report section of docs/VALIDATION.md")
     sys.stdout.flush()
     os._exit(0)
 

@@ -18,4 +18,4 @@ def is_available() -> bool:
 
 
 def convert_body(*_args, **_kwargs):
-    raise NotImplementedError("FLIP Fluids adapter is not implemented; see docs/spikes.md S9")
+    raise NotImplementedError("FLIP Fluids adapter is not implemented; see docs/VALIDATION.md, spike S9")

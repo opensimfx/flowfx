@@ -1,6 +1,6 @@
 """Exercise the FlowFX panel surface inside the real desktop Blender and report what breaks.
 
-Inside Blender (one preset per process, a Mantaflow domain kills the next scene reset, docs/spikes.md S8):
+Inside Blender (one preset per process, a Mantaflow domain kills the next scene reset, docs/VALIDATION.md, spike S8):
 
   blender --background --factory-startup --python tools/desktop_check.py -- <preset_id>
 

@@ -8,7 +8,7 @@ def _set_flag(ds, name: str, desired: bool):
     """Set a boolean only when it differs.
 
     In Blender 5.2.2 these three RNA setters toggle the flag whatever value is assigned
-    (docs/spikes.md S10), so assigning blindly can flip a flag the wrong way.
+    (docs/VALIDATION.md, spike S10), so assigning blindly can flip a flag the wrong way.
     """
     if getattr(ds, name) != desired:
         setattr(ds, name, desired)

@@ -2,6 +2,7 @@
 name = "flowfx"
 version = "0.1.0"
 description = "Physically based water and flow simulation for Blender 5.2+"
+readme = "README.md"
 requires-python = ">=3.13"
 license = { text = "GPL-3.0-or-later" }
 

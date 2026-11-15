@@ -1,6 +1,6 @@
 """Hs calibration with representative-seed selection, using temporary Ocean objects evaluated by Blender.
 
-Hs of one random seed on a finite tile varies by tens of percent between seeds (docs/validation_report.md),
+Hs of one random seed on a finite tile varies by tens of percent between seeds (docs/VALIDATION.md),
 so matching an ensemble average is not enough. Procedure:
   1. Measure the time-averaged variance of every candidate seed once at wave_scale = 1. Surface height is exactly
      linear in wave_scale, so no further evaluations are needed to rescale.
