@@ -52,7 +52,7 @@ Full walkthrough: [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
 Verified on **Blender 5.2.1 LTS (`bpy` wheel 5.2.2, Python 3.13)**:
 
 - 93 tests pass in the `bpy` 5.2.2 module: 76 unit, API contract and integration, 13 forked fluid, 4 slow validation.
-- Extension packaging: built and validated via `blender_ext.py validate` and `build`; `dist/flowfx-0.1.0-alpha.zip`.
+- Extension packaging: built and validated via `blender_ext.py validate` and `build`; `dist/flowfx-0.2.0-alpha.zip`.
 - Spectral engine (Ocean modifier): 10 surface presets build, calibrate and bake EXR in tests; held-out Hs errors in `docs/VALIDATION.md`.
 - Heightfield engine (shallow water): Lake-at-rest, mass, wave speed, Ritter dam break, Manning all measured; displaced mesh equals baked pixels.
 - Fluid engine (Mantaflow): **Bakes run and match theory** — dam-break front 5.96 m/s against Ritter 6.26 m/s (4.9%), river inflow delivers the designed 0.5 m cross-section (`docs/VALIDATION.md (Mantaflow validation)`).

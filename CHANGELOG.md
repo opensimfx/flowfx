@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-- The list of third-party reference files studied during design moved out of `docs/REFERENCES.md` into a local,
-  ignored `private/` folder; the published references keep what FlowFX ships and its licences.
+- Nothing yet.
+
+## 0.2.0-alpha.1 - 2026-11-16
+
+- `docs/REFERENCES.md` covers what FlowFX ships and its licences; working research notes are no longer published.
 - Repository layout shared by the four OpenSimFX add-ons (CONTRIBUTING.md, Repository conventions): the docs
   and `CONTRIBUTING.md` are now published, under the shared upper-case names (`user_guide.md` -> `USER_GUIDE.md`,
   `presets_reference.md` -> `PRESETS.md`, `theory.md` -> `PHYSICS.md`, `design.md` -> `SYSTEM_DESIGN.md`,
