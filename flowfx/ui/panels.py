@@ -8,10 +8,34 @@ from ..props.body import all_presets
 CAT = "FlowFX"
 
 
+# Layout follows the shared OpenSimFX UI conventions (docs/UI_STYLE.md, identical in every OpenSimFX add-on).
 class _Base:
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = CAT
+
+
+class _Sub(_Base):
+    bl_parent_id = "FLOWFX_PT_main"
+    bl_options = {"DEFAULT_CLOSED"}
+
+
+def _split(layout):
+    layout.use_property_split = True
+    layout.use_property_decorate = False
+    return layout
+
+
+def _readout(layout, rows):
+    col = layout.column(align=True)
+    for label, value in rows:
+        row = col.split(factor=0.5)
+        row.label(text=label)
+        row.label(text=value)
+
+
+def _fmt(value):
+    return f"{value:.4g}" if isinstance(value, float) else str(value)
 
 
 class FLOWFX_UL_bodies(bpy.types.UIList):
@@ -27,39 +51,24 @@ class FLOWFX_PT_main(_Base, bpy.types.Panel):
 
     def draw(self, context):
         fx = context.scene.flowfx
-        layout = self.layout
-        layout.template_list("FLOWFX_UL_bodies", "", fx, "bodies", fx, "active_index", rows=3)
-        row = layout.row(align=True)
-        row.operator("flowfx.body_remove", icon="REMOVE", text="Remove")
-        row.operator("flowfx.validate", icon="CHECKMARK", text="Validate")
-
-
-class FLOWFX_PT_presets(_Base, bpy.types.Panel):
-    bl_label = "Presets"
-    bl_parent_id = "FLOWFX_PT_main"
-
-    def draw(self, context):
-        fx = context.scene.flowfx
-        layout = self.layout
-        layout.prop(fx, "preset_category", text="")
-        layout.prop(fx, "preset_id", text="")
-        preset = next((p for p in all_presets() if p["id"] == fx.preset_id), None)
-        if preset:
-            col = layout.column(align=True)
-            col.scale_y = 0.9
-            col.label(text=f"Engine: {preset['engine']}")
-            for key, value in presets.derive(preset).items():
-                text = f"{value:.3g}" if isinstance(value, float) else str(value)
-                col.label(text=f"{key.replace('_', ' ')}: {text}")
+        layout = _split(self.layout)
+        col = layout.column(align=True)
+        col.prop(fx, "preset_category")
+        col.prop(fx, "preset_id")
         layout.prop(fx, "body_name")
-        layout.operator("flowfx.body_create", icon="ADD")
-        row = layout.row(align=True)
-        row.operator("flowfx.preset_apply", text="Apply to Active")
-        row.operator("flowfx.preset_save", text="Save")
+        col = layout.column()
+        col.scale_y = 1.4
+        col.operator("flowfx.body_create", icon="ADD")
+        layout.template_list("FLOWFX_UL_bodies", "", fx, "bodies", fx, "active_index", rows=3)
+        layout.operator("flowfx.validate", icon="CHECKMARK")
+        if fx.active_body() is not None:
+            layout.separator()
+            layout.operator("flowfx.body_remove", icon="TRASH")
 
 
 class FLOWFX_PT_body(_Base, bpy.types.Panel):
     bl_label = "Body"
+    bl_idname = "FLOWFX_PT_body"
     bl_parent_id = "FLOWFX_PT_main"
 
     @classmethod
@@ -68,41 +77,35 @@ class FLOWFX_PT_body(_Base, bpy.types.Panel):
 
     def draw(self, context):
         item = context.scene.flowfx.active_body()
-        layout = self.layout
+        layout = _split(self.layout)
         layout.label(text=f"{item.title}  [{item.uid}]")
         if item.engine == "spectral":
             layout.prop(item, "hs_target_m")
-            row = layout.row(align=True)
-            row.label(text=f"Wave scale {item.wave_scale:.3f}")
-            row.label(text=f"Residual {item.calibration_residual:.1%}")
+            _readout(layout, [("Wave scale", f"{item.wave_scale:.3f}"),
+                              ("Residual", f"{item.calibration_residual:.1%}")])
             layout.operator("flowfx.calibrate", icon="MOD_OCEAN")
         info = json.loads(item.info_json or "{}")
-        col = layout.column(align=True)
-        col.scale_y = 0.9
-        for key in sorted(info):
-            value = info[key]
-            if isinstance(value, float):
-                value = f"{value:.4g}"
-            col.label(text=f"{key.replace('_', ' ')}: {value}")
+        _readout(layout, [(key.replace("_", " ").capitalize(), _fmt(info[key])) for key in sorted(info)])
 
 
-class FLOWFX_PT_roles(_Base, bpy.types.Panel):
+class FLOWFX_PT_roles(_Sub, bpy.types.Panel):
     bl_label = "Roles and Coupling"
-    bl_parent_id = "FLOWFX_PT_main"
-    bl_options = {"DEFAULT_CLOSED"}
+    bl_idname = "FLOWFX_PT_roles"
 
     def draw(self, context):
         fx = context.scene.flowfx
-        layout = self.layout
+        layout = _split(self.layout)
+        col = layout.column(align=True)
         for role, label in (("OBSTACLE", "Obstacle"), ("TERRAIN", "Terrain"), ("SOURCE", "Source"),
                             ("SINK", "Sink"), ("BLOCK", "Block"), ("FLOATER", "Floater")):
-            layout.operator("flowfx.role_assign", text=label).role = role
+            col.operator("flowfx.role_assign", text=label).role = role
         layout.operator("flowfx.role_clear")
         box = layout.box()
         box.label(text="Wavemaker")
-        box.prop(fx, "wave_height_m")
-        box.prop(fx, "wave_period_s")
-        box.prop(fx, "wave_depth_m")
+        col = box.column(align=True)
+        col.prop(fx, "wave_height_m")
+        col.prop(fx, "wave_period_s")
+        col.prop(fx, "wave_depth_m")
         box.operator("flowfx.wavemaker_add", icon="FORCE_WIND")
         box = layout.box()
         box.label(text="Floater")
@@ -110,47 +113,62 @@ class FLOWFX_PT_roles(_Base, bpy.types.Panel):
         box.operator("flowfx.floater_bake", icon="PHYSICS")
 
 
-class FLOWFX_PT_shading(_Base, bpy.types.Panel):
+class FLOWFX_PT_shading(_Sub, bpy.types.Panel):
     bl_label = "Shading and Output"
-    bl_parent_id = "FLOWFX_PT_main"
-    bl_options = {"DEFAULT_CLOSED"}
+    bl_idname = "FLOWFX_PT_shading"
 
     def draw(self, context):
         fx = context.scene.flowfx
-        layout = self.layout
+        layout = _split(self.layout)
         layout.prop(fx, "water_variant")
         layout.operator("flowfx.shading_build", icon="MATERIAL")
         layout.operator("flowfx.volume_build", icon="MESH_CUBE")
         layout.operator("flowfx.compositing_build", icon="NODE_COMPOSITING")
 
 
-class FLOWFX_PT_cache(_Base, bpy.types.Panel):
+class FLOWFX_PT_cache(_Sub, bpy.types.Panel):
     bl_label = "Cache and Bake"
-    bl_parent_id = "FLOWFX_PT_main"
-    bl_options = {"DEFAULT_CLOSED"}
+    bl_idname = "FLOWFX_PT_cache"
 
     def draw(self, context):
         fx = context.scene.flowfx
         item = fx.active_body()
-        layout = self.layout
+        layout = _split(self.layout)
         if item is not None:
-            layout.label(text=f"RAM ~{item.estimate_ram_gb:.2f} GB   disk ~{item.estimate_disk_gb:.2f} GB")
+            _readout(layout, [("RAM", f"~{item.estimate_ram_gb:.2f} GB"),
+                              ("Disk", f"~{item.estimate_disk_gb:.2f} GB")])
         layout.operator("flowfx.estimate", icon="INFO")
         if item is not None and item.engine == "fluid":
             layout.prop(fx, "bake_stage")
-        op = layout.operator("flowfx.bake", icon="PLAY")
+        col = layout.column()
+        col.scale_y = 1.2
+        op = col.operator("flowfx.bake", icon="REC")
         if item is not None and item.engine == "fluid":
             op.stage = fx.bake_stage
-        row = layout.row(align=True)
-        row.operator("flowfx.bake_cancel", icon="CANCEL")
-        row.operator("flowfx.cache_free", icon="TRASH")
+        layout.operator("flowfx.bake_cancel", icon="CANCEL")
         layout.operator("flowfx.export_report", icon="TEXT")
+        layout.separator()
+        layout.operator("flowfx.cache_free", icon="TRASH")
 
 
-class FLOWFX_PT_diagnostics(_Base, bpy.types.Panel):
+class FLOWFX_PT_readout(_Sub, bpy.types.Panel):
+    bl_label = "Readout"
+    bl_idname = "FLOWFX_PT_readout"
+
+    def draw(self, context):
+        fx = context.scene.flowfx
+        preset = next((p for p in all_presets() if p["id"] == fx.preset_id), None)
+        if preset is None:
+            self.layout.label(text="Choose a preset to see its derived values.", icon="INFO")
+            return
+        rows = [("Engine", str(preset["engine"]))]
+        rows += [(key.replace("_", " ").capitalize(), _fmt(value)) for key, value in presets.derive(preset).items()]
+        _readout(self.layout, rows)
+
+
+class FLOWFX_PT_diagnostics(_Sub, bpy.types.Panel):
     bl_label = "Diagnostics"
-    bl_parent_id = "FLOWFX_PT_main"
-    bl_options = {"DEFAULT_CLOSED"}
+    bl_idname = "FLOWFX_PT_diagnostics"
 
     def draw(self, context):
         fx = context.scene.flowfx
@@ -160,7 +178,18 @@ class FLOWFX_PT_diagnostics(_Base, bpy.types.Panel):
         for issue in fx.issues:
             icon = {"ERROR": "ERROR", "WARNING": "ERROR", "INFO": "INFO"}[issue.severity]
             layout.label(text=f"{issue.code}: {issue.message}", icon=icon)
+        layout.operator("flowfx.validate", icon="CHECKMARK")
 
 
-classes = (FLOWFX_UL_bodies, FLOWFX_PT_main, FLOWFX_PT_presets, FLOWFX_PT_body, FLOWFX_PT_roles, FLOWFX_PT_shading,
-           FLOWFX_PT_cache, FLOWFX_PT_diagnostics)
+class FLOWFX_PT_presets(_Sub, bpy.types.Panel):
+    bl_label = "Preset Files"
+    bl_idname = "FLOWFX_PT_presets"
+
+    def draw(self, context):
+        row = self.layout.row(align=True)
+        row.operator("flowfx.preset_apply", text="Apply to Active", icon="IMPORT")
+        row.operator("flowfx.preset_save", text="Save", icon="EXPORT")
+
+
+classes = (FLOWFX_UL_bodies, FLOWFX_PT_main, FLOWFX_PT_body, FLOWFX_PT_roles, FLOWFX_PT_shading,
+           FLOWFX_PT_cache, FLOWFX_PT_readout, FLOWFX_PT_diagnostics, FLOWFX_PT_presets)

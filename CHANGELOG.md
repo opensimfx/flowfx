@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- UI follows the shared OpenSimFX conventions (`docs/UI_STYLE.md`, identical in all four add-ons):
+  preset category, preset, name and a large *Create Water Body* now open the main panel above the
+  body list, with *Remove Water Body* separated at the bottom; the preset's derived values moved
+  to *Readout*, *Apply to Active* / *Save* to *Preset Files*, and *Free Cache* sits at the bottom
+  of *Cache and Bake*. Every panel uses Blender's label-left property layout. No properties or
+  operators changed.
+
 ## 0.1.0-alpha - 2026-10-21
 
 First public alpha: the working MVP, plus Mantaflow bakes validated against theory in desktop Blender.
