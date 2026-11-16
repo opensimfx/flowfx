@@ -16,12 +16,22 @@ class FLOWFX_OT_shading_build(bpy.types.Operator):
     def execute(self, context):
         fx = context.scene.flowfx
         item = fx.active_body()
-        mat = shading.build_water_material(f"{item.title} Water", fx.water_variant, item.uid)
+        from ..core import orchestrator
+        preset = orchestrator.find_preset(item.preset_id) if getattr(item, "preset_id", "") else {}
+        wind = None
+        if item.engine in ("spectral", "interaction"):
+            wind = ((preset or {}).get("physical") or {}).get("wind_speed_mps") or 0.0
+        targets = [o for o in common.objects_of(item.uid) if common.tag_of(o)["role"] in ("SURFACE", "DOMAIN", "FAR_SEA")]
+        baked = shading.baked_sequences(targets[0]) if targets else {}     # a heightfield bake's wet mask and flow
+        mat = shading.build_water_material(f"{item.title} Water", fx.water_variant, item.uid,
+                                           surface=shading.surface_for_engine(item.engine),
+                                           ripple=shading.ripple_for(preset or {}, item.engine), wind_mps=wind)
         n = 0
-        for obj in common.objects_of(item.uid):
-            if common.tag_of(obj)["role"] in ("SURFACE", "DOMAIN"):
-                shading.assign(obj, mat)
-                n += 1
+        for obj in targets:
+            shading.assign(obj, mat)
+            n += 1
+        if baked and targets:
+            shading.restore_sequences(targets[0], baked, context.scene)
         self.report({"INFO"}, f"Assigned '{mat.name}' to {n} object(s)")
         return {"FINISHED"}
 

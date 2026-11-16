@@ -160,3 +160,53 @@ def test_export_report_for_fluid_body(tmp_path):
     data = pytest.importorskip("json").loads(out.read_text())
     assert data["engine"] == "fluid" and data["derived"]["regime"] == "supercritical"
     assert data["info"]["resolution_max"] == 300
+
+
+def test_fluid_renders_white_water_smooth_mesh_and_ground(scene):
+    """Spray and foam render as instanced meshes sized by the voxel; scenery gets a ground material."""
+    ctx = _ctx(scene, "river_rapids")
+    res = registry.get("fluid").build(ctx)
+    dom = common.objects_of(ctx.uid, "DOMAIN")[0]
+    ds = dom.modifiers[0].domain_settings
+    assert (ds.mesh_smoothen_pos, ds.mesh_smoothen_neg) == (3, 2)
+    voxel = ctx.preset["mapping"]["voxel_m"]
+    systems = {ps.name: ps.settings for ps in dom.particle_systems}
+    assert {"Spray", "Foam"} <= set(systems)
+    for name, st in systems.items():
+        assert st.render_type == "OBJECT" and st.instance_object is not None
+        assert st.instance_object.hide_render and st.instance_object.data.materials[0] is not None
+    assert systems["Spray"].particle_size == pytest.approx(0.12 * voxel)
+    assert res.info["whitewater"].startswith("Spray")
+    for o in res.objects:
+        if common.tag_of(o)["role"] in ("TERRAIN", "OBSTACLE") and o.type == "MESH":
+            assert o.data.materials and o.data.materials[0] is not None, o.name
+
+
+def test_rivers_and_falls_start_running(scene):
+    """Channels start at normal depth with a full-width inflow; the waterfall starts running to its lip."""
+    ctx = _ctx(scene, "river_rapids")
+    res = registry.get("fluid").build(ctx)
+    W = ctx.preset["physical"]["extent_m"][1]
+    blocks = [o for o in res.objects if common.tag_of(o)["role"] == "BLOCK"]
+    inflow = next(o for o in res.objects if common.tag_of(o)["role"] == "SOURCE")
+    ys = [v.co.y for v in inflow.data.vertices]
+    assert len(blocks) == 1 and max(ys) - min(ys) == pytest.approx(W)
+    ctx = _ctx(scene, "waterfall")
+    res = registry.get("fluid").build(ctx)
+    names = {o.name.split(" ", 1)[1].split(".")[0] for o in res.objects
+             if common.tag_of(o)["role"] in ("BLOCK", "SINK")}
+    assert {"Stream", "Plunge Pool", "Outflow"} <= names
+    errors = [i for i in registry.get("fluid").validate(ctx) if i.severity == Severity.ERROR]
+    assert errors == [], errors
+
+
+@pytest.mark.parametrize("quality,factor", [("standard", 1.0), ("high", 1.5), ("cinematic", 2.0)])
+def test_fluid_quality_refines_the_grid(scene, quality, factor):
+    ctx = _ctx(scene, "dam_break", quality=quality)
+    res = registry.get("fluid").build(ctx)
+    ds = common.objects_of(ctx.uid, "DOMAIN")[0].modifiers[0].domain_settings
+    voxel = ctx.preset["mapping"]["voxel_m"] / factor
+    assert ds.resolution_max == scale.resolution_for_voxel(ctx.preset["physical"]["extent_m"], voxel)
+    assert res.info["voxel_m"] == pytest.approx(voxel) and res.info["quality"] == quality
+    assert ds.sndparticle_sampling_wavecrest == max(1, round(200 / factor))            # spray and foam
+    assert ds.sndparticle_sampling_trappedair == max(1, round(4 / factor ** 3))        # bubbles held

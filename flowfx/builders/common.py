@@ -42,6 +42,20 @@ def body_collection(scene, uid: str, name: str):
     return coll
 
 
+def blend_relative(path) -> str:
+    """``path`` as a "//" path relative to the saved .blend, so a moved project or a render farm finds it.
+
+    Unsaved files, and paths on another Windows drive, stay absolute.
+    """
+    p = str(path)
+    if not bpy.data.filepath:
+        return p
+    try:
+        return bpy.path.relpath(p)
+    except ValueError:
+        return p
+
+
 def new_object(name, mesh, coll, uid, role, location=(0.0, 0.0, 0.0), **extra):
     obj = bpy.data.objects.new(name, mesh)
     obj.location = location

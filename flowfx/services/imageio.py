@@ -18,6 +18,9 @@ def write_exr(path, rgba) -> str:
     img = bpy.data.images.new("flowfx_tmp_write", nx, ny, alpha=True, float_buffer=True)
     try:
         img.colorspace_settings.name = "Non-Color"
+        # data, not colour: RGB and A are independent channels (heightfield elevation + wet mask, spectral
+        # displacement + foam). Straight alpha made Blender premultiply on save and divide on load.
+        img.alpha_mode = "CHANNEL_PACKED"
         img.pixels.foreach_set(arr.ravel())
         img.filepath_raw = str(path)
         img.file_format = "OPEN_EXR"
@@ -33,6 +36,7 @@ def read_exr(path):
     img = bpy.data.images.load(str(path), check_existing=False)
     try:
         img.colorspace_settings.name = "Non-Color"
+        img.alpha_mode = "CHANNEL_PACKED"
         nx, ny = img.size
         buf = np.empty(nx * ny * 4, dtype=np.float32)
         img.pixels.foreach_get(buf)

@@ -155,3 +155,16 @@ def absorption_to_color_density(sigma_rgb):
     density = max(sigma_rgb)
     color = tuple(1.0 - s / density for s in sigma_rgb)
     return color, density
+
+
+def whitecap_fraction(wind_mps: float) -> float:
+    """Share of the sea covered by whitecaps, Monahan and O'Muircheartaigh (1980): W = 3.84e-6 U^3.41.
+
+    U is the wind speed at 10 m (m/s). About 1 % at 10 m/s, 2 % at 12 m/s, 22 % at 25 m/s.
+    """
+    return min(1.0, 3.84e-6 * max(wind_mps, 0.0) ** 3.41)
+
+
+def mean_square_slope(wind_mps: float) -> float:
+    """Mean-square slope of a wind-roughened sea, Cox and Munk (1954): 0.003 + 5.12e-3 U (U at 12.5 m, m/s)."""
+    return 0.003 + 5.12e-3 * max(wind_mps, 0.0)

@@ -139,6 +139,12 @@ class FLOWFX_PT_cache(_Sub, bpy.types.Panel):
                               ("Disk", f"~{item.estimate_disk_gb:.2f} GB")])
         layout.operator("flowfx.estimate", icon="INFO")
         if item is not None and item.engine == "fluid":
+            import json
+
+            current = json.loads(item.overrides_json or "{}").get("quality", "standard")
+            row = layout.row(align=True)
+            for q, label in (("standard", "Standard"), ("high", "High"), ("cinematic", "Cinematic")):
+                row.operator("flowfx.fluid_quality", text=label, depress=(q == current)).quality = q
             layout.prop(fx, "bake_stage")
         col = layout.column()
         col.scale_y = 1.2

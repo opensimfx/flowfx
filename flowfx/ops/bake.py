@@ -49,6 +49,9 @@ class FLOWFX_OT_bake(bpy.types.Operator):
 
     def _begin(self, context):
         item = _active(context)
+        if not bpy.data.filepath:
+            self.report({"WARNING"}, "Unsaved file: caches go to the system temp folder. Save the .blend first "
+                                     "to keep them next to the project")
         if item.engine == "fluid":
             dom = common.objects_of(item.uid, "DOMAIN")[0]
             fluid_binding.bake(dom, self.stage, context.scene)

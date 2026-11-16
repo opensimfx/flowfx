@@ -34,9 +34,17 @@ def add_wave_canvas(obj, params: dict | None = None):
 
 
 def add_brush(obj):
+    """Make `obj` a Dynamic Paint brush. Returns the modifier.
+
+    The modifier's type must be BRUSH before the brush settings are created: Dynamic Paint collects only modifiers
+    of type BRUSH, and `type_toggle` (which rebuilds the dependency relations) leaves the type on CANVAS unless it
+    was set first, as the panel tab does in the UI. Without it no brush ever made a wave.
+    """
     import bpy
 
     with bpy.context.temp_override(object=obj, active_object=obj, scene=bpy.context.scene):
         bpy.ops.object.modifier_add(type=MODIFIER_TYPE)
+        mod = next(m for m in reversed(obj.modifiers) if m.type == MODIFIER_TYPE)
+        mod.ui_type = "BRUSH"
         bpy.ops.dpaint.type_toggle(type="BRUSH")
-    return next(m for m in obj.modifiers if m.type == MODIFIER_TYPE)
+    return mod

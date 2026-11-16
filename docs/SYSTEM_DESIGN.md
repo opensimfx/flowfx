@@ -52,27 +52,43 @@ One Ocean object, GENERATE layer first; extra layers are further Ocean modifiers
 a simple expression (no Python auto-run needed). Foam attribute `flowfx_foam`. Bake: FlowFX evaluates the surface per frame
 and writes `flowfx_disp_####.exr` (R, G = horizontal displacement, B = height, A = foam) at render resolution.
 `query.build_query` returns a `GridHeightQuery` from the evaluated mesh (translation-only objects, one tile).
+Open-sea presets (tag `ocean`) repeat the tile an odd number of times out to about 2 km and a `FlowFX Tiles`
+Geometry Nodes modifier shifts the grid so the original tile stays centred; `bindings.ocean.single_tile` switches
+both off whenever FlowFX evaluates the surface (queries, floaters, bake, calibration), so every measurement is of
+the simulated tile. A flat `FAR_SEA` plane one Hs below mean level, sharing the material, carries the sea to the
+horizon. Foam coverage is calibrated after Hs (`calibrate.calibrate_foam`). `presets/calibration.json`
+(written by `tools/precalibrate.py`) stores the result for each preset at its defaults under a key hashing every
+input (Ocean parameters, target, seeds, tolerance, sample times, wind, Blender major.minor, cache version); a body
+whose key matches skips calibration (`calibration_source: precomputed`), any other is measured live.
 
 ### Heightfield
 
 `engines/heightfield/solver.py` is the shallow-water solver (see `PHYSICS.md`). Scenarios (`river_reach`, `flood_plain`,
 `tsunami_pulse`) build bed, initial state and boundaries from a preset. Bake writes two EXR sequences per frame:
 `flowfx_hf_surface_####.exr` (R=G=B=water surface elevation; dry cells sit on the bed) and `flowfx_hf_flow_####.exr`
-(u, v, depth, foam). A grid mesh with vertices at cell centres and UVs at pixel centres is displaced by a Displace modifier
-reading the surface sequence, so displaced vertices equal baked pixels (tested). Bake is a generator
+(u, v, depth, foam). The surface sequence's alpha is a wet mask (depth / 2 cm); dry cells sit 2 cm below the bed and
+the water shader turns them transparent over the `TERRAIN` riverbed object built from the scenario's bed. Data EXRs are
+channel-packed (RGB and A independent). A grid mesh with vertices at cell centres and UVs at pixel centres is displaced
+by a Displace modifier reading the surface sequence (texture alpha off), so displaced vertices equal baked pixels
+(tested). Bake is a generator
 (`bake_iter`), run modal in the UI with cancel, or synchronously from scripts.
 
 ### Fluid
 
-`domain.py` derives Mantaflow settings from the preset and `scale.py` (resolution from target voxel size, cache layout,
+`domain.py` derives Mantaflow settings from the preset and `scale.py` (resolution from target voxel size divided by the
+body's quality factor, `domain.QUALITY`: standard 1, high 1.5, cinematic 2; cache layout,
 secondary particles, borders). `scenarios.py` builds starter scenery: channel (sloped bed, rocks merged into one effector,
-Manning-velocity inflow, outflow), cylinder pier, waterfall, dam break, wave tank (beach wedge, still-water block, keyframed
+Manning-velocity inflow across the full width, an initial slab at normal depth on the sloping bed, outflow),
+cylinder pier, waterfall (cliff-top stream from a wall inflow, plunge pool with an outflow at its level), dam break, wave tank (beach wedge, still-water block, keyframed
 piston from the Biesel transfer function). `roles.py` assigns Effector / Flow roles, setting the planar flag for open
 meshes. `guides.py` enables guiding. `bake.py` calls `bpy.ops.fluid.bake_*` (UI session). **Not exercised by a bake in tests.**
 
 ### Interaction
 
-Dynamic Paint Waves canvas on a cell-centre grid plus brush objects (`still_water`, `boat_wake`).
+Dynamic Paint Waves canvas on a cell-centre grid plus brush objects (`still_water`, `boat_wake`). `boat_wake`
+builds a stand-in motorboat whose hull is the brush, keyframed linearly across the canvas at `hull_speed_mps`;
+the canvas `wave_speed` is set so the wave speed is a third of the boat's (Kelvin half-angle), and a second
+canvas surface (PAINT, dissolving) records the wash in the `flowfx_foam` colour layer the water material reads.
 
 ### gn_flip and external
 
@@ -206,6 +222,15 @@ Decision: every identifier string lives in `bindings/` with a `CONTRACT` table; 
 Blender. Quirk workarounds live next to the binding they fix.
 
 Consequences: API drift is a one-folder fix, and the contract test fails loudly on a new Blender.
+
+### 0008 Water is shaded for how it is bounded; one upgrade pass on load
+
+Status: accepted (1.0).
+
+Decision: `builders/shading.py` builds deep (open water: opaque body colour, Fresnel, Cox-Munk chop), shallow
+(heightfield over a bed: transmission, no volume) and closed (Mantaflow liquid: transmission plus Beer-Lambert volume)
+materials. `services/upgrade.py` adds the one application handler, on `load_post`, which upgrades 0.x bodies once
+(marked `flowfx_version` in their info) and never runs during playback, so decision 0004 still holds.
 
 ### 0004 No application handlers in the playback path
 

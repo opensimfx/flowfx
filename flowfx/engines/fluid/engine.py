@@ -25,7 +25,7 @@ class FluidEngine(Engine):
     def estimate(self, ctx, frames=250):
         m = ctx.preset["mapping"]
         extent = ctx.preset["physical"]["extent_m"]
-        res = scale.resolution_for_voxel(extent, m["voxel_m"])
+        res = scale.resolution_for_voxel(extent, domain.voxel_for(ctx.preset, ctx.overrides))
         sec = any(m["secondary"].values())
         return scale.estimate_fluid(extent, res, 0.15, m["particle_number"], frames, sec)
 
@@ -72,7 +72,19 @@ class FluidEngine(Engine):
                     o.location = tuple(a + b for a, b in zip(o.location, ctx.location))
         mat = shading.build_water_material(f"{ctx.name} Water", p["shading"]["material"], ctx.uid)
         shading.assign(dom_obj, mat)
-        info.update(resolution_max=params["resolution_max"], voxel_m=p["mapping"]["voxel_m"],
+        ground = None
+        for o in objs:            # scenery the preset built (bed, floor, basin, rocks, cliff, pier) renders as ground
+            role = (common.tag_of(o) or {}).get("role")
+            if role in ("TERRAIN", "OBSTACLE") and o.type == "MESH" and not o.data.materials:
+                ground = ground or shading.build_ground_material(f"{ctx.name} Ground", ctx.uid)
+                o.data.materials.append(ground)
+        from ...builders import whitewater
+        voxel = domain.voxel_for(p, ctx.overrides)
+        # particle size follows the preset's grid, not the quality's: the count is held constant across
+        # qualities, so the white water keeps its look on a finer grid
+        info["whitewater"] = ",".join(whitewater.setup_render(dom_obj, p["mapping"]["voxel_m"]))
+        info.update(resolution_max=params["resolution_max"], voxel_m=voxel,
+                    quality=ctx.overrides.get("quality", "standard"),
                     estimate_ram_gb=self.estimate(ctx).ram_gb, cache_directory=params["cache_directory"])
         notes = ["Bake from the Cache panel (needs a UI session)."]
         return BuildResult([dom_obj] + objs, notes, info)

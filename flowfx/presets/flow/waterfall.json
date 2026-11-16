@@ -11,15 +11,15 @@
     "inflow_velocity_mps": 2.0,
     "extent_m": [
       10.0,
-      10.0,
-      12.0
+      7.0,
+      9.0
     ]
   },
   "targets": {},
   "mapping": {
     "scenario": "waterfall",
     "method": "FLIP",
-    "voxel_m": 0.1,
+    "voxel_m": 0.07,
     "flip_ratio": 0.97,
     "particle_number": 2,
     "use_fractions": true,

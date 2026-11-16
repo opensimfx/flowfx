@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    name: Tests (${{ matrix.os }}, bpy module)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install bpy and test tools
+        run: python -m pip install "bpy>=5.2,<5.3" numpy pytest
+      # unit, API contract, integration, Mantaflow setup (one process per test) and the slow validation tests
+      - run: python tools/run_tests.py --all
+      - name: Presets are up to date
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          python tools/gen_presets.py
+          git diff --exit-code flowfx/presets
+
+  blender:
+    name: Blender ${{ matrix.blender }} (Linux)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        blender: ["5.2.3", "5.2.4"]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: System libraries for headless Blender
+        run: sudo apt-get update && sudo apt-get install -y libxi6 libxxf86vm1 libxfixes3 libxrender1 libxkbcommon0 libsm6 libgl1 libegl1
+      - name: Download Blender
+        run: |
+          curl -sSL -o blender.tar.xz "https://download.blender.org/release/Blender5.2/blender-${{ matrix.blender }}-linux-x64.tar.xz"
+          tar -xf blender.tar.xz
+          echo "FLOWFX_BLENDER=$PWD/blender-${{ matrix.blender }}-linux-x64/blender" >> "$GITHUB_ENV"
+      - name: Build and validate the extension zip
+        run: |
+          python tools/build_extension.py --blender-ext "$(dirname "$FLOWFX_BLENDER")/5.2/scripts/addons_core/bl_pkg/cli/blender_ext.py"
+          "$FLOWFX_BLENDER" --command extension validate dist/flowfx-*.zip
+      - name: Install the zip in a clean profile and drive every preset through the panels
+        run: python tools/zip_check.py
+      - name: Mantaflow dam-break bake against Ritter's solution
+        run: '"$FLOWFX_BLENDER" -b --factory-startup --python-exit-code 1 --python tools/fluid_validation.py -- dam_break'
+      - name: Cycles render of the open-sea bench (CPU)
+        run: |
+          FLOWFX_W=480 FLOWFX_H=270 "$FLOWFX_BLENDER" -b --factory-startup --python tools/render_look.py -- sea ocean_moderate look.png 16 24
+          "$FLOWFX_BLENDER" -b --factory-startup --python-exit-code 1 --python-expr "import bpy, numpy as np, os; im = bpy.data.images.load(os.path.abspath('look.png')); a = np.array(im.pixels[:]).reshape(-1, 4); m = float(a[:, :3].mean()); print('mean', m); assert 0.02 < m < 0.9, m"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: look-linux-${{ matrix.blender }}
+          path: look.png
+          if-no-files-found: ignore

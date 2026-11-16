@@ -83,3 +83,17 @@ def test_absorption_conversion_roundtrip():
     for s, c in zip(sigma, color):
         assert density * (1.0 - c) == pytest.approx(s)
     assert all(0.0 <= c <= 1.0 for c in color)
+
+
+def test_whitecap_fraction_monahan():
+    assert abs(T.whitecap_fraction(10.0) - 0.0099) < 0.0005      # ~1 % at 10 m/s
+    assert 0.015 < T.whitecap_fraction(12.0) < 0.02
+    assert 0.2 < T.whitecap_fraction(25.0) < 0.25
+    assert T.whitecap_fraction(0.0) == 0.0 and T.whitecap_fraction(200.0) == 1.0
+
+
+def test_mean_square_slope_cox_munk():
+    import math
+    # Cox and Munk: (tan 16 deg)^2 at 14 m/s
+    assert abs(T.mean_square_slope(14.0) - math.tan(math.radians(16.0)) ** 2) < 0.01   # fit 0.0747 vs their rounded tan(16 deg)^2
+    assert T.mean_square_slope(0.0) == 0.003

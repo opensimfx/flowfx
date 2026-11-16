@@ -11,6 +11,8 @@ from . import roles
 from .wavemaker import piston_trajectory
 
 THICK = 0.2  # floor thickness below z = THICK surface level
+CLIFF_LENGTH_M = 4.0
+POOL_DEPTH_M = 0.6
 
 
 def _obj(ctx, coll, name, mesh, role, loc=(0, 0, 0), **kw):
@@ -36,6 +38,15 @@ def _rocks_mesh(name, count, extent_xy, z_floor_fn, radius=(0.25, 0.6), seed=3, 
     return me
 
 
+def _slab_on_slope(name, x0, x1, width, bed_fn, depth):
+    """Water of a constant depth over a sloping bed between x0 and x1 (a closed hexahedron)."""
+    w = width / 2
+    v = [(x0, -w, bed_fn(x0)), (x1, -w, bed_fn(x1)), (x1, w, bed_fn(x1)), (x0, w, bed_fn(x0))]
+    v += [(x, y, z + depth) for x, y, z in v]
+    f = [(0, 3, 2, 1), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+    return common.mesh_from_arrays(name, v, f)
+
+
 def channel(ctx, coll, extent, ph, m):
     L, W, H = extent
     h, slope, n = ph["depth_m"], ph["slope"], ph["manning_n"]
@@ -47,13 +58,17 @@ def channel(ctx, coll, extent, ph, m):
                         keep_clear=(3.0, 3.0))
     ro = _obj(ctx, coll, f"{ctx.name} Rocks", rocks, "OBSTACLE")
     roles.assign_role(ro, "OBSTACLE", ctx.uid)
-    inflow = _obj(ctx, coll, f"{ctx.name} Inflow", common.box_mesh("in", (1.0, W - 0.4, h), (0.5, 0.0, bed0 + h / 2)),
-                  "SOURCE")
+    bed_z = lambda x: bed0 - (bed0 - THICK) * x / L  # noqa: E731
+    # the river is flowing at its normal depth from the first frame, and the inflow spans the channel at the same
+    # depth: no dry start and no block of held water with side walls at the upstream end
+    water = _obj(ctx, coll, f"{ctx.name} Initial Water", _slab_on_slope("w", 1.0, L - 0.5, W, bed_z, h), "BLOCK")
+    roles.assign_role(water, "BLOCK", ctx.uid, velocity=(u, 0.0, 0.0))
+    inflow = _obj(ctx, coll, f"{ctx.name} Inflow", _slab_on_slope("in", 0.0, 1.0, W, bed_z, h), "SOURCE")
     roles.assign_role(inflow, "SOURCE", ctx.uid, velocity=(u, 0.0, 0.0))
     sink = _obj(ctx, coll, f"{ctx.name} Outflow", common.box_mesh("out", (0.5, W, 1.5), (L - 0.25, 0.0, THICK + 0.75)),
                 "SINK")
     roles.assign_role(sink, "SINK", ctx.uid)
-    return [bed, ro, inflow, sink], {"inflow_velocity_mps": u}
+    return [bed, ro, water, inflow, sink], {"inflow_velocity_mps": u}
 
 
 def cylinder(ctx, coll, extent, ph, m):
@@ -66,9 +81,9 @@ def cylinder(ctx, coll, extent, ph, m):
                                                                    (L / 3, 0, THICK + (h + 1.0) / 2)), "OBSTACLE")
     roles.assign_role(pier, "OBSTACLE", ctx.uid)
     water = _obj(ctx, coll, f"{ctx.name} Initial Water",
-                 common.box_mesh("w", (L - 1.5, W - 0.4, h), (1.0 + (L - 1.5) / 2, 0, THICK + h / 2)), "BLOCK")
+                 common.box_mesh("w", (L - 1.5, W, h), (1.0 + (L - 1.5) / 2, 0, THICK + h / 2)), "BLOCK")
     roles.assign_role(water, "BLOCK", ctx.uid, velocity=(u, 0.0, 0.0))
-    inflow = _obj(ctx, coll, f"{ctx.name} Inflow", common.box_mesh("in", (1.0, W - 0.4, h), (0.5, 0, THICK + h / 2)),
+    inflow = _obj(ctx, coll, f"{ctx.name} Inflow", common.box_mesh("in", (1.0, W, h), (0.5, 0, THICK + h / 2)),
                   "SOURCE")
     roles.assign_role(inflow, "SOURCE", ctx.uid, velocity=(u, 0.0, 0.0))
     sink = _obj(ctx, coll, f"{ctx.name} Outflow", common.box_mesh("out", (0.5, W, h + 1.0), (L - 0.25, 0, THICK + (h + 1) / 2)),
@@ -83,13 +98,30 @@ def waterfall(ctx, coll, extent, ph, m):
     basin = _obj(ctx, coll, f"{ctx.name} Basin", common.box_mesh("basin", (L, W, THICK), (L / 2, 0, THICK / 2)),
                  "TERRAIN")
     roles.assign_role(basin, "TERRAIN", ctx.uid)
-    cliff = _obj(ctx, coll, f"{ctx.name} Cliff", common.box_mesh("cliff", (4.0, W, drop), (2.0, 0, THICK + drop / 2)),
+    cliff = _obj(ctx, coll, f"{ctx.name} Cliff", common.box_mesh("cliff", (CLIFF_LENGTH_M, W, drop),
+                                                                   (CLIFF_LENGTH_M / 2, 0, THICK + drop / 2)),
                  "OBSTACLE")
     roles.assign_role(cliff, "OBSTACLE", ctx.uid)
+    # the inflow sits against the upstream wall and joins the stream directly: a gap behind it filled with
+    # back-flowing water that splashed at the top
     inflow = _obj(ctx, coll, f"{ctx.name} Inflow",
-                  common.box_mesh("in", (1.0, W * 0.5, h), (0.6, 0, THICK + drop + h / 2)), "SOURCE")
+                  common.box_mesh("in", (1.0, W * 0.5, h), (0.5, 0, THICK + drop + h / 2)), "SOURCE")
     roles.assign_role(inflow, "SOURCE", ctx.uid, velocity=(u, 0.0, 0.0))
-    return [basin, cliff, inflow], {"impact_speed_mps": theory.free_fall_speed(drop)}
+    # the fall starts at once: water already runs along the cliff top to the lip, so the curtain reaches the
+    # plunge pool within the free-fall time (about a second for 6 m); the pool is held at its level by an outflow.
+    # (A pre-built falling nappe was tried: its impact on the pool is a burst of spray that lasts two seconds.)
+    top_z, lip = THICK + drop, CLIFF_LENGTH_M
+    stream = _obj(ctx, coll, f"{ctx.name} Stream", common.box_mesh(
+        "stream", (lip - 1.0, W * 0.5, h), (1.0 + (lip - 1.0) / 2, 0, top_z + h / 2)), "BLOCK")
+    roles.assign_role(stream, "BLOCK", ctx.uid, velocity=(u, 0.0, 0.0))
+    pool_z = THICK + POOL_DEPTH_M
+    pool = _obj(ctx, coll, f"{ctx.name} Plunge Pool", common.box_mesh(
+        "pool", (L - lip - 0.5, W, POOL_DEPTH_M), (lip + (L - lip - 0.5) / 2, 0, THICK + POOL_DEPTH_M / 2)), "BLOCK")
+    roles.assign_role(pool, "BLOCK", ctx.uid)
+    sink = _obj(ctx, coll, f"{ctx.name} Outflow", common.box_mesh(
+        "out", (0.5, W, 1.0), (L - 0.25, 0, pool_z + 0.5)), "SINK")
+    roles.assign_role(sink, "SINK", ctx.uid)
+    return [basin, cliff, inflow, stream, pool, sink], {"impact_speed_mps": theory.free_fall_speed(drop)}
 
 
 def dam_break(ctx, coll, extent, ph, m):

@@ -1,0 +1,166 @@
+{
+  "choppy_waves": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.05472032056200764,
+      "foam_coverage": -0.2412109375,
+      "foam_fraction_measured": 0.031092176213860512,
+      "foam_fraction_target": 0.031090508559918434,
+      "hs_ensemble_m": 1.242378538595354,
+      "hs_measured_m": 1.1343356153255908,
+      "hs_seed_spread": 0.1257530683362885,
+      "hs_target_m": 1.2,
+      "hs_time_spread": 0.21986067612544066,
+      "random_seed": 4,
+      "wave_scale": 0.8459183685534281
+    },
+    "key": "4455e46778f620fc"
+  },
+  "custom": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.029119630566176835,
+      "foam_coverage": 0.1044921875,
+      "foam_fraction_measured": 0.009730414487421513,
+      "foam_fraction_target": 0.00987031980583244,
+      "hs_ensemble_m": 1.0293968782170524,
+      "hs_measured_m": 0.9708803694338232,
+      "hs_seed_spread": 0.1021816633784372,
+      "hs_target_m": 1.0,
+      "hs_time_spread": 0.02681664136035202,
+      "random_seed": 4,
+      "wave_scale": 0.9171836533168571
+    },
+    "key": "f28c59758503ecc8"
+  },
+  "lake": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.0002721578811877159,
+      "foam_coverage": 0.0283203125,
+      "foam_fraction_measured": 0.0015176349552348256,
+      "foam_fraction_target": 0.0017291273818234724,
+      "hs_ensemble_m": 0.1788389642580256,
+      "hs_measured_m": 0.17004626683980192,
+      "hs_seed_spread": 0.10546887869307109,
+      "hs_target_m": 0.17,
+      "hs_time_spread": 0.015289974131516662,
+      "random_seed": 1,
+      "wave_scale": 0.17156550438734033
+    },
+    "key": "82451bcad6daa0c6"
+  },
+  "lake_windy": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.006729533473830574,
+      "foam_coverage": 0.1044921875,
+      "foam_fraction_measured": 0.01015863986685872,
+      "foam_fraction_target": 0.00987031980583244,
+      "hs_ensemble_m": 0.4273075876249577,
+      "hs_measured_m": 0.4630955853979621,
+      "hs_seed_spread": 0.10158842988132671,
+      "hs_target_m": 0.46,
+      "hs_time_spread": 0.025597242241511976,
+      "random_seed": 4,
+      "wave_scale": 0.37180416229399116
+    },
+    "key": "bf0f8ad95f6a21f3"
+  },
+  "ocean_moderate": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.01402825134585406,
+      "foam_coverage": -7.2431640625,
+      "foam_fraction_measured": 0.018380448105745018,
+      "foam_fraction_target": 0.018379736183957524,
+      "hs_ensemble_m": 2.8173206202092094,
+      "hs_measured_m": 2.028056502691708,
+      "hs_seed_spread": 0.39491896468399773,
+      "hs_target_m": 2.0,
+      "hs_time_spread": 0.11434938695075114,
+      "random_seed": 3,
+      "wave_scale": 1.491980807487729
+    },
+    "key": "8e7fbfa3712eb0a8"
+  },
+  "ocean_rough": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.0033112629309113295,
+      "foam_coverage": 0.2333984375,
+      "foam_fraction_measured": 0.04806530848145485,
+      "foam_fraction_target": 0.04902079669692531,
+      "hs_ensemble_m": 3.9605282767824863,
+      "hs_measured_m": 4.013245051723645,
+      "hs_seed_spread": 0.054962312806275476,
+      "hs_target_m": 4.0,
+      "hs_time_spread": 0.014022139086330645,
+      "random_seed": 5,
+      "wave_scale": 3.8383506955132503
+    },
+    "key": "c5987cec8cca7a56"
+  },
+  "ocean_swell": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.006265727154964734,
+      "foam_coverage": 0.0634765625,
+      "foam_fraction_measured": 0.004540272755548358,
+      "foam_fraction_target": 0.004611774673971626,
+      "hs_ensemble_m": 0.7799903657095725,
+      "hs_measured_m": 0.8050125817239718,
+      "hs_seed_spread": 0.10279895375655394,
+      "hs_target_m": 0.8,
+      "hs_time_spread": 0.02136907033304773,
+      "random_seed": 6,
+      "wave_scale": 0.8091763147262283
+    },
+    "key": "85019facaf968ee0"
+  },
+  "pond": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.0027647968429729206,
+      "hs_ensemble_m": 0.019936116158726983,
+      "hs_measured_m": 0.019944704063140542,
+      "hs_seed_spread": 0.04790577058909586,
+      "hs_target_m": 0.02,
+      "hs_time_spread": 0.003274916686574808,
+      "random_seed": 2,
+      "wave_scale": 0.02009595736488451
+    },
+    "key": "18f683bce00bf7a8"
+  },
+  "small_waves": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.0006341348492605592,
+      "hs_ensemble_m": 0.09942862209224095,
+      "hs_measured_m": 0.10006341348492606,
+      "hs_seed_spread": 0.033342914544600144,
+      "hs_target_m": 0.1,
+      "hs_time_spread": 0.025072804461574824,
+      "random_seed": 6,
+      "wave_scale": 0.08716321381775766
+    },
+    "key": "8f96d6e177bfd767"
+  },
+  "storm": {
+    "info": {
+      "calibrated": true,
+      "calibration_residual": 0.054410329355718545,
+      "foam_coverage": 0.3505859375,
+      "foam_fraction_measured": 0.22700868546962738,
+      "foam_fraction_target": 0.224546688110497,
+      "hs_ensemble_m": 8.002018664561103,
+      "hs_measured_m": 8.435282634845748,
+      "hs_seed_spread": 0.03784821118319501,
+      "hs_target_m": 8.0,
+      "hs_time_spread": 0.03703278770067187,
+      "random_seed": 4,
+      "wave_scale": 7.554044273697368
+    },
+    "key": "38f54125f28a4783"
+  }
+}

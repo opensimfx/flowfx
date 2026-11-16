@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "flowfx"
-version = "0.2.0-alpha"
+version = "1.0.0"
 name = "FlowFX"
 tagline = "Physically based water and flow simulation"
 maintainer = "Arsh (arsh342)"

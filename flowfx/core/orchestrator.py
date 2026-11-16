@@ -16,10 +16,20 @@ def _bpy():
 
 
 def cache_root(context) -> Path:
+    """Where caches go. A "//" root needs a saved .blend; unsaved, caches go to the system temp folder.
+
+    (Unsaved, Blender resolved "//flowfx_cache/" against its working directory: "/" for a
+    Blender started from the macOS Dock, so bakes failed to write.)
+    """
+    import tempfile
+
     from ..props.prefs import get_prefs
 
     bpy = _bpy()
-    return Path(bpy.path.abspath(get_prefs(context).cache_root))
+    root = get_prefs(context).cache_root
+    if root.startswith("//") and not bpy.data.filepath:
+        return Path(tempfile.gettempdir()) / "flowfx_cache"
+    return Path(bpy.path.abspath(root))
 
 
 def find_preset(preset_id: str) -> dict:
@@ -43,6 +53,7 @@ def build_context(context, item, preset=None):
 
 def _store(item, result, issues):
     info = {k: v for k, v in result.info.items() if isinstance(v, (int, float, str, bool))}
+    info["flowfx_version"] = 1     # built by 1.0: services/upgrade.py leaves the body alone
     item.info_json = json.dumps(info)
     item.status = "; ".join(result.notes)[:200]
     item.wave_scale = float(info.get("wave_scale", item.wave_scale))

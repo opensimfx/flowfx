@@ -45,14 +45,58 @@ def read_params(mod, keys=None) -> dict:
     return {k: getattr(mod, k) for k in (keys or ASSIGNABLE)}
 
 
+TILES_MODIFIER = "FlowFX Tiles"
+
+
+class single_tile:
+    """Context manager: evaluate the surface as its one simulated tile.
+
+    Open-sea surfaces repeat their tile out to the horizon and shift the repeats so the
+    original tile stays centred (`TILES_MODIFIER`). Queries, floaters, bakes and
+    calibration measure the tile itself, so the repeats and the shift are switched off
+    for the duration and restored afterwards.
+    """
+
+    def __init__(self, obj):
+        self.obj = obj
+        self.saved = []
+
+    def __enter__(self):
+        for m in self.obj.modifiers:
+            if m.type == MODIFIER_TYPE and (m.repeat_x != 1 or m.repeat_y != 1):
+                self.saved.append((m, "repeat", (m.repeat_x, m.repeat_y)))
+                m.repeat_x = m.repeat_y = 1
+            elif m.type == "NODES" and m.name == TILES_MODIFIER and m.show_viewport:
+                self.saved.append((m, "show", True))
+                m.show_viewport = False
+        return self.obj
+
+    def __exit__(self, *exc):
+        for m, kind, value in self.saved:
+            if kind == "repeat":
+                m.repeat_x, m.repeat_y = value
+            else:
+                m.show_viewport = value
+        return False
+
+
 def evaluate(obj, depsgraph=None, attributes=()):
-    """Evaluate `obj` and return dict(co=(N,3), uv=(N,2)|None, <attr>=(N,)|None).
+    """Evaluate `obj` as one tile and return dict(co=(N,3), uv=(N,2)|None, <attr>=(N,)|None).
 
     Mesh attributes are read as scalars (red channel for colour attributes).
     """
+    with single_tile(obj):
+        return _evaluate(obj, depsgraph, attributes)
+
+
+def _evaluate(obj, depsgraph=None, attributes=()):
     import bpy
 
-    dg = depsgraph or bpy.context.evaluated_depsgraph_get()
+    if depsgraph is None:
+        dg = bpy.context.evaluated_depsgraph_get()
+    else:
+        dg = depsgraph
+        dg.update()
     ev = obj.evaluated_get(dg)
     me = ev.to_mesh()
     try:

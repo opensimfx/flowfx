@@ -46,24 +46,41 @@ class SpectralEngine(Engine):
         mod = layers.add_layer(obj, scene, params, 0, speed=ctx.overrides.get("speed", 1.0))
         notes, info = [], {}
         if ctx.overrides.get("calibrate", True):
-            res = calibrate_mod.calibrate_surface(scene, params, p["targets"]["hs_m"],
-                                                  seeds=p.get("calibrate", {}).get("seeds", calibrate_mod.DEFAULT_SEEDS),
-                                                  tolerance=p.get("calibrate", {}).get("tolerance", 0.10))
-            mod.wave_scale = res.scale
-            mod.random_seed = res.seed
-            params["random_seed"] = res.seed
-            info.update(wave_scale=res.scale, random_seed=res.seed, hs_measured_m=res.measured_hs,
-                        hs_target_m=res.target_hs, hs_ensemble_m=res.ensemble_hs, hs_seed_spread=res.seed_spread, hs_time_spread=res.time_spread,
-                        calibration_residual=res.residual, calibrated=res.converged)
-            if not res.converged:
-                notes.append(f"Calibration residual {res.residual:.1%} above tolerance.")
+            cal = p.get("calibrate", {})
+            seeds = cal.get("seeds", calibrate_mod.DEFAULT_SEEDS)
+            tolerance = cal.get("tolerance", 0.10)
+            target = p["targets"]["hs_m"]
+            key = calibrate_mod.calibration_key(p, params, target, seeds, tolerance)
+            found = calibrate_mod.cached(p["id"], key)
+            if found is not None:
+                info.update(found, calibration_source="precomputed")
+            else:
+                info.update(calibrate_mod.calibrate_preset(scene, p, params, target, seeds, tolerance),
+                            calibration_source="measured")
+            info["calibration_key"] = key
+            mod.wave_scale = info["wave_scale"]
+            mod.random_seed = info["random_seed"]
+            params["random_seed"] = info["random_seed"]
+            if "foam_coverage" in info:
+                mod.foam_coverage = info["foam_coverage"]
+            if not info["calibrated"]:
+                notes.append(f"Calibration residual {info['calibration_residual']:.1%} above tolerance.")
+        rep = presets.horizon_repeat(p)          # after calibration, which measures one tile
+        if rep > 1:
+            info["repeat"] = rep
         for i, extra in enumerate(ctx.overrides.get("extra_layers", []), start=1):
             lp = dict(params)
             lp.update(extra)
             lp.setdefault("random_seed", params.get("random_seed", 0) + 11 * i)
             layers.add_layer(obj, scene, lp, i, speed=ctx.overrides.get("speed", 1.0))
-        mat = shading.build_water_material(f"{ctx.name} Water", p["shading"]["material"], ctx.uid)
+        if rep > 1:                             # after the extra layers: the Tiles shift comes last
+            layers.add_tiles(obj, rep, mod.spatial_size * mod.size)
+        mat = shading.build_water_material(f"{ctx.name} Water", p["shading"]["material"], ctx.uid,
+                                           surface="deep", wind_mps=p["physical"].get("wind_speed_mps") or 0.0)
         shading.assign(obj, mat)
+        if rep > 1:
+            far = layers.add_far_sea(coll, ctx.uid, ctx.name, ctx.location, p["targets"]["hs_m"])
+            shading.assign(far, mat)
         common.tag(obj, ctx.uid, "SURFACE", **info)
         return BuildResult([obj], notes, info)
 

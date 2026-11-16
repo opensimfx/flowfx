@@ -1,16 +1,16 @@
 # Roadmap
 
-Status as of 0.1.0. Sizes: S under 1 week, M 2 to 3 weeks, L 4 to 6 weeks (one developer).
+Status as of 1.0.0 (2026-11-16): the three engines, coupling, shading and caches are stable; the Geometry Nodes FLIP backend and the FLIP Fluids adapter stay internal (probe and detection only, not in the panel; M6). Sizes: S under 1 week, M 2 to 3 weeks, L 4 to 6 weeks (one developer).
 
 | Milestone | Scope | Status | Remaining |
 |---|---|---|---|
 | M0 Spikes | S1 to S9 | Mostly done | S1, S3, S4 (moving domain), S9 need a desktop Blender with Mantaflow and FLIP Fluids; see `VALIDATION.md (Spikes)` |
 | M1 Spectral MVP | Extension, bindings, spectral engine, calibration, 10 surface presets, shading, EXR bake, previews, API contract test | **Done** | Real preview renders; panel for extra layers; EEVEE check |
-| M2 Fluid core | Domain builder, roles, obstacles, caches, six fluid presets, whitewater path | **Bakes validated** | Real bakes done: dam-break front within 4.9% of Ritter, river inflow at the design depth. Left: calibrate estimates against real bakes, secondary particles to Point Clouds |
+| M2 Fluid core | Domain builder, roles, obstacles, caches, six fluid presets, whitewater path | **Bakes validated** | Real bakes done: dam-break front within 4.9% of Ritter, river inflow at the design depth. Spray and foam render as instanced meshes (1.0). Left: calibrate estimates against real bakes, secondary particles to Point Clouds |
 | M3 Tank and events | Wavemaker, beach, guided up-res, surf, compositing, EEVEE | Partial | Guides (S1, S3); absorbing end; tsunami FLIP region; EEVEE parity |
-| M4 Heightfield | Solver, boundaries, rivers, flood, tsunami far field | **Solver and bake done** | Hand-off to a FLIP region; shading from the flow sequence; larger grids (compiled core) |
-| M5 Coupling | Floaters, interaction, wake, Impulse API | Partial | Engines consuming impulses; wake validation (Kelvin angle); floater collisions |
-| M6 Release | Docs, FLIP Fluids adapter, performance, wheel, submission | Docs done | Adapter, compiled core, extension platform submission, GN backend when Blender ships the nodes |
+| M4 Heightfield | Solver, boundaries, rivers, flood, tsunami far field | **Solver and bake done** | Hand-off to a FLIP region; larger grids (compiled core). Shading from the flow sequence done in 1.0 |
+| M5 Coupling | Floaters, interaction, wake, Impulse API | Partial | Engines consuming impulses; floater collisions. Wake angle validated in 1.0 (18.7 deg against 19.47 deg) |
+| M6 Release | Docs, FLIP Fluids adapter, performance, wheel, submission | **1.0 released**: docs, CI, upgrade path, look pass | Adapter, compiled core, extension platform submission, GN backend when Blender ships the nodes |
 
 ## Next steps in order
 

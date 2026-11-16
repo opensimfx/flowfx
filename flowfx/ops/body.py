@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import StringProperty
+from bpy.props import EnumProperty, StringProperty
 
 from ..core import orchestrator
 
@@ -48,4 +48,33 @@ class FLOWFX_OT_body_remove(bpy.types.Operator):
         return {"FINISHED"}
 
 
-classes = (FLOWFX_OT_body_create, FLOWFX_OT_body_remove)
+class FLOWFX_OT_fluid_quality(bpy.types.Operator):
+    bl_idname = "flowfx.fluid_quality"
+    bl_label = "Fluid Quality"
+    bl_description = ("Rebuild the Mantaflow domain at another grid resolution (Standard: the preset's, High: 1.5x "
+                      "finer, about 4x the bake time; Cinematic: 2x finer, about 9x). The bake must be run again")
+    bl_options = {"REGISTER", "UNDO"}
+
+    quality: EnumProperty(name="Quality", items=[("standard", "Standard", "The preset's grid"),
+                                                  ("high", "High", "1.5x finer grid"),
+                                                  ("cinematic", "Cinematic", "2x finer grid")])
+
+    @classmethod
+    def poll(cls, context):
+        item = context.scene.flowfx.active_body()
+        return item is not None and item.engine == "fluid"
+
+    def execute(self, context):
+        import json
+
+        item = context.scene.flowfx.active_body()
+        overrides = json.loads(item.overrides_json or "{}")
+        overrides["quality"] = self.quality
+        orchestrator.rebuild_body(context, item, overrides=overrides)
+        info = json.loads(item.info_json or "{}")
+        self.report({"INFO"}, f"{self.quality.title()}: {info.get('voxel_m', 0) * 100:.1f} cm cells, "
+                              f"resolution {info.get('resolution_max', '?')}; bake again")
+        return {"FINISHED"}
+
+
+classes = (FLOWFX_OT_body_create, FLOWFX_OT_body_remove, FLOWFX_OT_fluid_quality)

@@ -85,6 +85,20 @@ OCEAN_MAPPING_KEYS = ("spectrum", "choppiness", "wave_alignment", "damping", "fo
                       "resolution", "viewport_resolution", "sharpen_peak_jonswap", "fetch_jonswap")
 
 
+HORIZON_M = 2000.0      # open-sea surfaces tile out to about this far, so the sea reaches the horizon
+MAX_REPEAT = 11
+
+
+def horizon_repeat(p: dict) -> int:
+    """Ocean-modifier tile repeats for an open-sea preset (tag "ocean"); 1 for bounded water (lakes, ponds)."""
+    import math
+    if "ocean" not in p.get("tags", ()) or p.get("engine") != "spectral":
+        return 1
+    extent = float(p["physical"].get("extent_m") or HORIZON_M)
+    n = max(1, min(MAX_REPEAT + 1, math.ceil(HORIZON_M / extent)))
+    return n if n % 2 else n + 1          # odd: the original tile sits in the middle of the repeats
+
+
 def surface_params(p: dict, overrides: dict | None = None) -> dict:
     """Ocean modifier parameters (Blender API identifiers) for a spectral preset."""
     if p["engine"] != "spectral":

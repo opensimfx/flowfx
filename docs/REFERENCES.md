@@ -15,3 +15,14 @@ Nothing third-party is bundled in the extension.
 | Code | This repository | GPL-3.0-or-later |
 
 Before adding any asset, add a row here with its licence and source.
+
+## Sources for the water look (1.0)
+
+| Source | Used for |
+|---|---|
+| Monahan, E. C. and O'Muircheartaigh, I. (1980), Optimal power-law description of oceanic whitecap coverage dependence on wind speed, J. Phys. Oceanogr. 10; reproduced in Albert et al., Atmos. Chem. Phys. 16, 13725 (2016) | Whitecap fraction per wind speed: foam calibration |
+| Cox, C. and Munk, W. (1954), Measurement of the roughness of the sea surface from photographs of the Sun's glitter, J. Opt. Soc. Am. 44; Mobley, Ocean Optics Web Book, "Cox-Munk sea surface slope statistics" | Mean-square slope per wind speed: chop bump and roughness |
+| Beaufort wind scale, Royal Meteorological Society; NOAA/NWS "Estimating wind speed and sea state with visual clues" | Wave height and foam per wind force: preset checks, foam streaks |
+| Werdell et al. (2018), Satellite remote sensing: ocean color (NASA); Dutkiewicz et al. (2019), Ocean colour signature of climate change | Colour and brightness of deep water |
+| Tessendorf, J. (2004), Simulating Ocean Water, SIGGRAPH course notes | What the light leaving the sea is made of |
+| Crest Ocean System documentation, "Water appearance" | What production ocean shaders expose (scattering colour, foam, crest glow) |

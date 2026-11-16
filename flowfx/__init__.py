@@ -11,10 +11,12 @@ def register():
     if _registered:
         return
     from . import ops, props, ui
+    from .services import upgrade
 
     props.register()
     ops.register()
     ui.register()
+    upgrade.register()
     _registered = True
 
 
@@ -23,7 +25,9 @@ def unregister():
     if not _registered:
         return
     from . import ops, props, ui
+    from .services import upgrade
 
+    upgrade.unregister()
     ui.unregister()
     ops.unregister()
     props.unregister()

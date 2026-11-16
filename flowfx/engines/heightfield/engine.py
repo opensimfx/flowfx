@@ -23,11 +23,14 @@ def attach_sequence(obj, out_dir, frame_start: int, frame_count: int, uid: str):
         if mod.type == "DISPLACE" and mod.name == "FlowFX Surface":
             obj.modifiers.remove(mod)
     img = bpy.data.images.load(first, check_existing=False)
+    img.filepath = common.blend_relative(first)     # relative to the .blend: found after a move and on a farm
     img.colorspace_settings.name = "Non-Color"
+    img.alpha_mode = "CHANNEL_PACKED"   # RGB is elevation, A the wet mask: never divide one by the other
     img.source = "SEQUENCE"
     common.tag(img, uid, "OUTPUT")
     tex = bpy.data.textures.new("FlowFX HF Surface", "IMAGE")
     tex.image = img
+    tex.use_alpha = False             # displace by elevation alone; the alpha (wet mask) is for the shader
     tex.extension = "EXTEND"
     iu = tex.image_user
     iu.frame_start = frame_start
@@ -41,7 +44,35 @@ def attach_sequence(obj, out_dir, frame_start: int, frame_count: int, uid: str):
     mod.direction = "Z"
     mod.strength = 1.0
     mod.mid_level = 0.0
+    shading.add_wet_mask(obj, img, frame_start, frame_count)
+    flow_first = cache_io.seq_path(out_dir, cache_io.FLOW, 1)
+    if os.path.exists(flow_first):
+        flow = bpy.data.images.load(flow_first, check_existing=False)
+        flow.filepath = common.blend_relative(flow_first)
+        flow.colorspace_settings.name = "Non-Color"
+        flow.alpha_mode = "CHANNEL_PACKED"          # u, v, depth, foam: data, not colour
+        flow.source = "SEQUENCE"
+        common.tag(flow, uid, "OUTPUT")
+        shading.add_flow_detail(obj, flow, frame_start, frame_count, bpy.context.scene)
     return mod
+
+
+def build_bed(name, coll, uid, location, sc):
+    """The riverbed or terrain the heightfield flows over, as its own object: dry ground shows it."""
+    import numpy as np
+
+    mesh = common.grid_mesh_cell_centres(f"{name} Bed", sc.nx, sc.ny, sc.extent[0], sc.extent[1],
+                                         origin=(0.0, -sc.extent[1] / 2))
+    z = np.asarray(sc.solver.b, dtype=np.float64).reshape(-1)
+    co = np.empty(len(mesh.vertices) * 3)
+    mesh.vertices.foreach_get("co", co)
+    co = co.reshape(-1, 3)
+    co[:, 2] = z
+    mesh.vertices.foreach_set("co", co.ravel())
+    mesh.update()
+    obj = common.new_object(f"{name} Bed", mesh, coll, uid, "TERRAIN", location)
+    shading.assign(obj, shading.build_ground_material(f"{name} Riverbed", uid))
+    return obj
 
 
 @register
@@ -71,9 +102,12 @@ class HeightfieldEngine(Engine):
         coll = common.body_collection(ctx.scene, ctx.uid, ctx.name)
         mesh = common.grid_mesh_cell_centres(f"{ctx.name} Surface", sc.nx, sc.ny, ex, ey, origin=(0.0, -ey / 2))
         obj = common.new_object(f"{ctx.name} Surface", mesh, coll, ctx.uid, "SURFACE", ctx.location)
-        shading.assign(obj, shading.build_water_material(f"{ctx.name} Water", p["shading"]["material"], ctx.uid))
+        shading.assign(obj, shading.build_water_material(f"{ctx.name} Water", p["shading"]["material"], ctx.uid,
+                                                         surface="shallow", ripple=shading.ripple_for(p, "heightfield")))
+        bed = build_bed(ctx.name, coll, ctx.uid, ctx.location, sc)
         info = dict(sc.info, nx=sc.nx, ny=sc.ny, cell_m=sc.dx, cache_directory=str(ctx.cache_dir / "heightfield"))
-        return BuildResult([obj], ["Bake the solve from the Cache panel; the sequence drives a Displace modifier."], info)
+        return BuildResult([obj, bed], ["Bake the solve from the Cache panel; the sequence drives a Displace modifier."],
+                           info)
 
     def bake_iter(self, ctx, frame_start=None, frame_end=None):
         """Generator: solve and write one frame per step, yielding (done, total). Returns stats via ctx.stats."""

@@ -15,7 +15,7 @@
   },
   "mapping": {
     "spectrum": "JONSWAP",
-    "choppiness": 1.3,
+    "choppiness": 1.0,
     "wave_alignment": 0.6,
     "damping": 0.4,
     "foam_coverage": 0.4,
