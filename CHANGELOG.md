@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Free Cache safety.** A body's cache folder is `<cache root>/<body id>`, and the ID is stored in the .blend.
+  IDs are now only accepted in the generated format (12 hex characters). Free Cache deletes a folder only if it
+  is inside the cache root, is not a symlink and holds nothing but FlowFX's engine folders and report. Mantaflow's
+  free only runs on the body's own fluid cache. Before, a crafted file with the ID `..` could make Free Cache
+  delete the folder above the cache root.
+- The extension zip now contains the GPL-3.0 `LICENSE`.
+- The open-sea calibration cache is read as UTF-8 on every system (Windows' default encoding differs).
+- CI runs the packaged add-on in real Blender on Windows and macOS as well as Linux: zip install in a clean profile,
+  every preset through the panels, and the Mantaflow dam-break validation.
+
 ## 1.0.0 - 2026-11-16
 
 First stable release. Scenes made with 0.2 are upgraded once when they are opened (water materials, open-sea

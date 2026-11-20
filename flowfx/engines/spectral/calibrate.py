@@ -180,7 +180,7 @@ def _load_cache() -> dict:
     global _cache_data
     if _cache_data is None:
         try:
-            _cache_data = json.loads(CACHE_FILE.read_text())
+            _cache_data = json.loads(CACHE_FILE.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             _cache_data = {}
     return _cache_data

@@ -31,7 +31,7 @@ Three engines sit behind one workflow: a spectral ocean solver that solves for a
 
 ## Install
 
-Requires Blender **5.2 LTS or newer**.
+Requires Blender **5.2 LTS**.
 
 Download `flowfx-1.0.0.zip` from the [releases](https://github.com/opensimfx/flowfx/releases), or build it:
 

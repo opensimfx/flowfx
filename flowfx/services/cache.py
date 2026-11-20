@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 
-from ..core.ids import stable_hash
+from ..core.ids import is_uid, stable_hash
 
 MANIFEST = "flowfx_cache.json"
 
@@ -29,11 +30,42 @@ def is_stale(directory, params: dict) -> bool:
     return json.loads(mf.read_text(encoding="utf-8")).get("hash") != stable_hash(params)
 
 
-def free(directory) -> int:
-    """Delete a cache directory. Returns the number of files removed."""
+# What a body's cache folder holds: one folder per engine and the exported report.
+CACHE_ENTRIES = {"fluid", "heightfield", "spectral", "report.json", MANIFEST}
+
+
+def is_inside(path, root) -> bool:
+    """True when ``path`` resolves (symlinks followed) strictly inside ``root``."""
+    real_root = Path(os.path.realpath(root))
+    real = Path(os.path.realpath(path))
+    return real != real_root and real_root in real.parents
+
+
+def is_body_cache(directory, root) -> bool:
+    """True only for a FlowFX body cache: named like a body ID, a real folder (not a symlink) inside the cache
+    root, holding nothing but FlowFX's own engine folders and report."""
+    directory = Path(directory)
+    if not is_uid(directory.name) or directory.is_symlink() or not directory.is_dir():
+        return False
+    if not is_inside(directory, root):
+        return False
+    try:
+        return all(child.name in CACHE_ENTRIES for child in directory.iterdir())
+    except OSError:
+        return False
+
+
+def free(directory, root) -> int:
+    """Delete a body's cache folder and return the number of files removed.
+
+    The folder name comes from the .blend, so it is only deleted when ``is_body_cache`` holds; anything else
+    raises ValueError and nothing is removed.
+    """
     directory = Path(directory)
     if not directory.exists():
         return 0
+    if not is_body_cache(directory, root):
+        raise ValueError(f"{directory} is not a FlowFX cache folder; nothing was deleted.")
     n = sum(1 for _ in directory.rglob("*") if _.is_file())
     shutil.rmtree(directory)
     return n

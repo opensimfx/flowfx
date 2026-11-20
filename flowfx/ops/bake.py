@@ -1,4 +1,6 @@
 
+import os
+
 import bpy
 from bpy.props import EnumProperty
 
@@ -144,11 +146,20 @@ class FLOWFX_OT_cache_free(bpy.types.Operator):
 
     def execute(self, context):
         item = _active(context)
-        ctx = orchestrator.build_context(context, item)
-        removed = cache_service.free(ctx.cache_dir)
+        try:
+            ctx = orchestrator.build_context(context, item)
+            removed = cache_service.free(ctx.cache_dir, ctx.cache_root)
+        except ValueError as exc:
+            self.report({"ERROR"}, str(exc))
+            return {"CANCELLED"}
         if item.engine == "fluid":
             try:
-                fluid_binding.free(common.objects_of(item.uid, "DOMAIN")[0], "all", context.scene)
+                domain = common.objects_of(item.uid, "DOMAIN")[0]
+                # Mantaflow's free deletes the cache subfolders of whatever folder the domain (from the .blend)
+                # names: only let it run on this body's own fluid cache
+                configured = os.path.realpath(bpy.path.abspath(fluid_binding.find_modifier(domain).domain_settings.cache_directory))
+                if configured == os.path.realpath(ctx.cache_dir / "fluid"):
+                    fluid_binding.free(domain, "all", context.scene)
             except Exception:  # noqa: BLE001 - UI-only operator may be unavailable
                 pass
         self.report({"INFO"}, f"Removed {removed} cache file(s)")

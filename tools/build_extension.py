@@ -53,6 +53,10 @@ def main():
         print("$", " ".join(cmd))
         subprocess.run(cmd, check=True)
     zip_path = out / f"{manifest['id']}-{manifest['version']}.zip"
+    import zipfile
+    with zipfile.ZipFile(zip_path, "a", zipfile.ZIP_DEFLATED) as z:   # the GPL-3.0 text ships in the package
+        if "LICENSE" not in z.namelist():
+            z.write(ROOT / "LICENSE", "LICENSE")
     digest = hashlib.sha256(zip_path.read_bytes()).hexdigest()
     (out / f"{zip_path.name}.sha256").write_text(f"{digest}  {zip_path.name}\n", encoding="utf-8")
     print(f"built {zip_path} ({zip_path.stat().st_size / 1e3:.1f} kB) sha256 {digest[:16]}...")

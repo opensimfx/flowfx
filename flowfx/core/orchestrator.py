@@ -45,6 +45,9 @@ def build_context(context, item, preset=None):
     from ..engines.base import BuildContext
 
     scene = context.scene
+    if not ids.is_uid(item.uid):
+        # the cache folder is <root>/<uid>: never build it from an ID this add-on did not generate
+        raise ValueError(f"Water body {item.title!r} has an invalid ID; remove it and create it again.")
     preset = preset or find_preset(item.preset_id)
     overrides = json.loads(item.overrides_json or "{}")
     loc = tuple(scene.cursor.location)

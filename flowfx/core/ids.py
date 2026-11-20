@@ -6,8 +6,17 @@ import re
 import uuid
 
 
+_UID_RE = re.compile(r"[0-9a-f]{12}")
+
+
 def new_uid() -> str:
     return uuid.uuid4().hex[:12]
+
+
+def is_uid(value) -> bool:
+    """True for a body ID in the format ``new_uid`` makes. A .blend is untrusted input: an ID read from it is only
+    used in a cache path when it matches exactly (no "..", separators or absolute paths)."""
+    return isinstance(value, str) and _UID_RE.fullmatch(value) is not None
 
 
 def stable_hash(obj) -> str:

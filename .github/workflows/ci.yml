@@ -65,3 +65,42 @@ jobs:
           name: look-linux-${{ matrix.blender }}
           path: look.png
           if-no-files-found: ignore
+
+  # The packaged add-on in real Blender on Windows and macOS (the tests job covers them with the bpy module only).
+  blender-os:
+    name: Blender 5.2.3 (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Download Blender
+        run: |
+          V=5.2.3
+          if [ "$RUNNER_OS" = Windows ]; then
+            curl -sSL -o blender.zip "https://download.blender.org/release/Blender5.2/blender-$V-windows-x64.zip"
+            unzip -q blender.zip
+            echo "FLOWFX_BLENDER=$PWD/blender-$V-windows-x64/blender.exe" >> "$GITHUB_ENV"
+            echo "FLOWFX_EXT=$PWD/blender-$V-windows-x64/5.2/scripts/addons_core/bl_pkg/cli/blender_ext.py" >> "$GITHUB_ENV"
+          else
+            curl -sSL -o blender.dmg "https://download.blender.org/release/Blender5.2/blender-$V-macos-arm64.dmg"
+            hdiutil attach -nobrowse -readonly -mountpoint "$RUNNER_TEMP/blender" blender.dmg
+            echo "FLOWFX_BLENDER=$RUNNER_TEMP/blender/Blender.app/Contents/MacOS/Blender" >> "$GITHUB_ENV"
+            echo "FLOWFX_EXT=$RUNNER_TEMP/blender/Blender.app/Contents/Resources/5.2/scripts/addons_core/bl_pkg/cli/blender_ext.py" >> "$GITHUB_ENV"
+          fi
+      - name: Build and validate the extension zip
+        run: |
+          python tools/build_extension.py --blender-ext "$FLOWFX_EXT"
+          "$FLOWFX_BLENDER" --command extension validate dist/flowfx-*.zip
+      - name: Install the zip in a clean profile and drive every preset through the panels
+        run: python tools/zip_check.py
+      - name: Mantaflow dam-break bake against Ritter's solution
+        run: '"$FLOWFX_BLENDER" -b --factory-startup --python-exit-code 1 --python tools/fluid_validation.py -- dam_break'
